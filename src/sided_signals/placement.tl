@@ -106,6 +106,21 @@ local function selectedNumber(
     return finiteNumberOr(params[key], 0)
 end
 
+local function hasInjectedSideParam(
+    captureParams: any,
+    params: SidedSignals.ConstructionParams
+): boolean
+    if type(captureParams) == "table" then
+        local capturedValue = (captureParams as {string: any})[
+            core.HAS_INJECTED_SIDE_CAPTURE_KEY
+        ]
+        if type(capturedValue) == "boolean" then
+            return capturedValue as boolean
+        end
+    end
+    return params[SIDE_KEY] ~= nil
+end
+
 local function transformedModelAlignment(
     edgeModel: SidedSignals.ResultEdgeModel,
     captureParams: any
@@ -195,6 +210,30 @@ local function usesIgnoredModel(
     return false
 end
 
+local function forEachUniqueTransform(
+    edgeModels: {SidedSignals.ResultEdgeModel} | nil,
+    visit: function({number})
+)
+    if edgeModels == nil then
+        return
+    end
+
+    -- Some construction scripts reuse one transform table for several model parts.
+    local visited: {{number}: boolean} = {}
+    for _, edgeModel in ipairs(edgeModels as {SidedSignals.ResultEdgeModel}) do
+        if edgeModel.model ~= nil then
+            local model = edgeModel.model as SidedSignals.ResultModel
+            if model.transf ~= nil then
+                local transform = model.transf as {number}
+                if not visited[transform] then
+                    visited[transform] = true
+                    visit(transform)
+                end
+            end
+        end
+    end
+end
+
 local function shiftModels(
     edgeModels: {SidedSignals.ResultEdgeModel} | nil,
     transformIndex: integer,
@@ -207,19 +246,13 @@ local function shiftModels(
         return
     end
 
-    for _, edgeModel in ipairs(edgeModels as {SidedSignals.ResultEdgeModel}) do
-        if edgeModel.model ~= nil then
-            local model = edgeModel.model as SidedSignals.ResultModel
-            if model.transf ~= nil then
-                local transform = model.transf as {number}
-                local shiftedValue = finiteNumberOr(transform[transformIndex], 0)
-                    + shift
-                if isFiniteNumber(shiftedValue) then
-                    transform[transformIndex] = shiftedValue
-                end
-            end
+    forEachUniqueTransform(edgeModels, function(transform: {number})
+        local shiftedValue = finiteNumberOr(transform[transformIndex], 0)
+            + shift
+        if isFiniteNumber(shiftedValue) then
+            transform[transformIndex] = shiftedValue
         end
-    end
+    end)
 end
 
 local function applySideAndLateralOffset(
@@ -227,18 +260,21 @@ local function applySideAndLateralOffset(
     params: SidedSignals.ConstructionParams,
     captureParams: any
 )
-    local hasInjectedSide = params[SIDE_KEY] ~= nil
-    local side = hasInjectedSide
-        and SIDE_BY_INDEX[
-            selectedIndex(
-                params,
-                SIDE_KEY,
-                SIDE_ORIGINAL_INDEX,
-                SIDE_RIGHT_INDEX
-            )
-        ]
-        or nil
+    local sideIndex = selectedIndex(
+        params,
+        SIDE_KEY,
+        SIDE_ORIGINAL_INDEX,
+        SIDE_RIGHT_INDEX
+    )
     local lateralOffset = selectedNumber(params, SIDE_OFFSET_KEY)
+    if sideIndex == SIDE_ORIGINAL_INDEX and lateralOffset == 0 then
+        return
+    end
+
+    local hasInjectedSide = hasInjectedSideParam(captureParams, params)
+    local side = hasInjectedSide
+        and SIDE_BY_INDEX[sideIndex]
+        or nil
     if side == "Original" or (side == nil and lateralOffset == 0) then
         return
     end
@@ -282,45 +318,50 @@ local function applySideAndLateralOffset(
 end
 
 local function requestsAdjustment(
+    captureParams: any,
     params: SidedSignals.ConstructionParams,
     includeAdvancedAdjustments: boolean
 ): boolean
-    local side = params[SIDE_KEY]
-    if side ~= nil then
-        if side ~= SIDE_ORIGINAL_INDEX then
-            return true
-        end
-    else
-        local lateralOffset = params[SIDE_OFFSET_KEY]
-        if lateralOffset ~= nil and lateralOffset ~= 0 then
+    local sideIndex = selectedIndex(
+        params,
+        SIDE_KEY,
+        SIDE_ORIGINAL_INDEX,
+        SIDE_RIGHT_INDEX
+    )
+    local lateralOffset = selectedNumber(params, SIDE_OFFSET_KEY)
+    if sideIndex ~= SIDE_ORIGINAL_INDEX or lateralOffset ~= 0 then
+        if hasInjectedSideParam(captureParams, params) then
+            if sideIndex ~= SIDE_ORIGINAL_INDEX then
+                return true
+            end
+        elseif lateralOffset ~= 0 then
             return true
         end
     end
 
-    local longitudinalOffset = params[LONGITUDINAL_OFFSET_KEY]
-    if longitudinalOffset ~= nil and longitudinalOffset ~= 0 then
+    if selectedNumber(params, LONGITUDINAL_OFFSET_KEY) ~= 0 then
         return true
     end
     if includeAdvancedAdjustments then
-        local heightOffset = params[HEIGHT_OFFSET_KEY]
-        if heightOffset ~= nil and heightOffset ~= 0 then
+        if selectedNumber(params, HEIGHT_OFFSET_KEY) ~= 0 then
             return true
         end
-        local yawOffset = params[YAW_OFFSET_KEY]
-        if yawOffset ~= nil and yawOffset ~= 0 then
+        if selectedNumber(params, YAW_OFFSET_KEY) ~= 0 then
             return true
         end
-        local pitchOffset = params[PITCH_OFFSET_KEY]
-        if pitchOffset ~= nil and pitchOffset ~= 0 then
+        if selectedNumber(params, PITCH_OFFSET_KEY) ~= 0 then
             return true
         end
-        local rollOffset = params[ROLL_OFFSET_KEY]
-        if rollOffset ~= nil and rollOffset ~= 0 then
+        if selectedNumber(params, ROLL_OFFSET_KEY) ~= 0 then
             return true
         end
     end
-    local mode = params[MODE_KEY]
-    return mode ~= nil and mode ~= MODE_ORIGINAL_INDEX
+    return selectedIndex(
+        params,
+        MODE_KEY,
+        MODE_ORIGINAL_INDEX,
+        MODE_WAYPOINT_INDEX
+    ) ~= MODE_ORIGINAL_INDEX
 end
 
 local function applyLongitudinalOffset(
@@ -492,22 +533,17 @@ local function applyOrientationOffsets(
         return
     end
 
-    for _, edgeModel in ipairs(result.edgeModels as {SidedSignals.ResultEdgeModel}) do
-        if edgeModel.model ~= nil then
-            local model = edgeModel.model as SidedSignals.ResultModel
-            if model.transf ~= nil then
-                rotateTransformOrientation(
-                    model.transf as {number},
-                    rollCosine,
-                    rollSine,
-                    pitchCosine,
-                    pitchSine,
-                    yawCosine,
-                    yawSine
-                )
-            end
-        end
-    end
+    forEachUniqueTransform(result.edgeModels, function(transform: {number})
+        rotateTransformOrientation(
+            transform,
+            rollCosine,
+            rollSine,
+            pitchCosine,
+            pitchSine,
+            yawCosine,
+            yawSine
+        )
+    end)
 end
 
 local function applySignalMode(
@@ -585,7 +621,11 @@ local function modifyScript(
 
         local params = rawParams as SidedSignals.ConstructionParams
         if params[SIDE_OFFSET_KEY] == nil
-            or not requestsAdjustment(params, includeAdvancedAdjustments)
+            or not requestsAdjustment(
+                captureParams,
+                params,
+                includeAdvancedAdjustments
+            )
         then
             return originalUpdate(...)
         end

@@ -23,10 +23,15 @@
     "preRunScript": {
         "fileName": ""
     },
-    "revision": 1,
+    "revision": 2,
     "runScript": {
         "fileName": "apasz_sided_signals::/mod.script@runFn"
     },
     "severityAdd": "None",
-    "severityRemove": "Warning"
+    "severityRemove": "Warning",
+    "known_signal_mods": [
+        "6418599",
+        "6413987",
+        "6378133"
+    ]
 }

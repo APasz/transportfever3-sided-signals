@@ -62,6 +62,7 @@ global record SidedSignals
         MODE_KEY: string
         PARAM_GROUP: string
         PARAM_SCRIPT: string
+        HAS_INJECTED_SIDE_CAPTURE_KEY: string
         MODEL_ALIGNMENTS_CAPTURE_KEY: string
         METADATA_KEY: string
         METADATA_VERSION: integer

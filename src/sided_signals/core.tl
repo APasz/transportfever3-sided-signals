@@ -54,6 +54,7 @@ local M: SidedSignals.Core = {
     MODE_KEY = "apasz_sided_signals_mode",
     PARAM_GROUP = "apasz_sided_signals",
     PARAM_SCRIPT = "apasz_sided_signals::/sided_signals/params.gui",
+    HAS_INJECTED_SIDE_CAPTURE_KEY = "apasz_sided_signals_has_injected_side",
     MODEL_ALIGNMENTS_CAPTURE_KEY = "apasz_sided_signals_model_alignments",
     METADATA_KEY = "apasz_sided_signals",
     METADATA_VERSION = 1,

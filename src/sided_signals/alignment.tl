@@ -263,9 +263,10 @@ local function buildNormalizedModelNames(
     return normalizedNames
 end
 
-local function attachModelAlignments(
+local function attachPlacementCapture(
     construction: api.type.ConstructionDesc,
-    alignments: {string: SidedSignals.ModelAlignment}
+    alignments: {string: SidedSignals.ModelAlignment},
+    hasInjectedSide: boolean
 )
     local updateScript = construction.updateScript
     local captureParams: table = {}
@@ -274,6 +275,7 @@ local function attachModelAlignments(
             captureParams[key] = value
         end
     end
+    captureParams[core.HAS_INJECTED_SIDE_CAPTURE_KEY] = hasInjectedSide
     captureParams[core.MODEL_ALIGNMENTS_CAPTURE_KEY] = alignments
 
     local replacement = api.type.ScriptRef.new()
@@ -313,7 +315,11 @@ local function prepareSignalConstructions()
                 metadataAlignments,
                 directoryCache
             )
-            attachModelAlignments(construction, alignments)
+            local hasInjectedSide = core.hasParam(
+                params as {api.type.ScriptParam},
+                core.SIDE_KEY
+            )
+            attachPlacementCapture(construction, alignments, hasInjectedSide)
             preparedCount = preparedCount + 1
             modelReferenceCount = modelReferenceCount + count
         end

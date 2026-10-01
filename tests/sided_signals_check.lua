@@ -8,6 +8,7 @@ local YAW_OFFSET_KEY = "apasz_sided_signals_yaw_offset"
 local PITCH_OFFSET_KEY = "apasz_sided_signals_pitch_offset"
 local ROLL_OFFSET_KEY = "apasz_sided_signals_roll_offset"
 local MODE_KEY = "apasz_sided_signals_mode"
+local HAS_INJECTED_SIDE_CAPTURE_KEY = "apasz_sided_signals_has_injected_side"
 local MODEL_ALIGNMENTS_CAPTURE_KEY = "apasz_sided_signals_model_alignments"
 local METADATA_KEY = "apasz_sided_signals"
 
@@ -445,6 +446,21 @@ assertEqual(
 	"native waypoint stays a waypoint by default"
 )
 
+local portugueseNativeSide = {
+	edgeObject = { snapToTrack = true },
+	menuCategory = { categories = { { category = "rail_signals" } } },
+	params = {
+		{ key = "joao_sa_lado" },
+	},
+}
+modifyConstruction("infrastructure/signals/sinal_alto/sinal_alto.con", portugueseNativeSide)
+assertNil(parameter(portugueseNativeSide.params, SIDE_KEY), "Portuguese native side is not duplicated")
+assertEqual(
+	parameter(portugueseNativeSide.params, SIDE_OFFSET_KEY).checkEnabledScript.params.hasNativeSide,
+	true,
+	"Portuguese native side enables lateral offset"
+)
+
 local fullyParameterized = {
 	edgeObject = { snapToTrack = true },
 	menuCategory = { categories = { { category = "rail_signals" } } },
@@ -514,6 +530,20 @@ assertEqual(
 	parameter(unrelatedRotationControls.params, ROLL_OFFSET_KEY).numbers[16],
 	0,
 	"a native pitch control does not suppress roll"
+)
+
+local portugueseLateralControl = {
+	edgeObject = { snapToTrack = true },
+	menuCategory = { categories = { { category = "rail_signals" } } },
+	params = {
+		{ key = "joao_lado_distancia" },
+	},
+}
+modifyConstruction("infrastructure/signal/portuguese_lateral.con", portugueseLateralControl)
+assertEqual(
+	parameter(portugueseLateralControl.params, SIDE_KEY).defaultIndex,
+	1,
+	"a Portuguese lateral-distance key is not mistaken for a side selector"
 )
 
 local genericRotationControl = {
@@ -650,12 +680,21 @@ constructionsById[2] = positiveConstruction
 constructionNamesById[2] = "yomiti1225_railway_signal::/infrastructure/signal/japanese_signal.con"
 constructionsById[3] = siblingConstruction
 constructionNamesById[3] = "::/infrastructure/signal/signal_path_b.con"
+portugueseNativeSide.updateScript = {
+	fileName = vanillaScriptRef,
+	params = {},
+}
+constructionsById[4] = portugueseNativeSide
+constructionNamesById[4] = "::/infrastructure/signal/portuguese_native.con"
 postRun()
 
 local vanillaCapture = vanilla.updateScript.params
 local positiveCapture = positiveConstruction.updateScript.params
 local siblingCapture = siblingConstruction.updateScript.params
+local portugueseNativeCapture = portugueseNativeSide.updateScript.params
 assertEqual(vanillaCapture.existingCaptureValue, 17, "existing capture params are preserved")
+assertEqual(vanillaCapture[HAS_INJECTED_SIDE_CAPTURE_KEY], true, "injected side ownership is captured")
+assertEqual(portugueseNativeCapture[HAS_INJECTED_SIDE_CAPTURE_KEY], false, "native side ownership is captured")
 assertEqual(
 	siblingCapture[MODEL_ALIGNMENTS_CAPTURE_KEY],
 	vanillaCapture[MODEL_ALIGNMENTS_CAPTURE_KEY],
@@ -960,10 +999,16 @@ local movedInward = vanillaScript.updateFn(vanillaCapture, {
 assertNear(movedInward.edgeModels[1].model.transf[14], 2, "negative lateral offset moves inward")
 
 local nativeSideScript = modifyScript("native_side.script", makeSignalScript("::/infrastructure/signal/vanilla.mdl", 4))
-local nativeLateralOffset = nativeSideScript.updateFn(vanillaCapture, {
+local nativeLateralOffset = nativeSideScript.updateFn(portugueseNativeCapture, {
 	[SIDE_OFFSET_KEY] = 5,
 })
 assertNear(nativeLateralOffset.edgeModels[1].model.transf[14], 9, "lateral offset follows a native side result")
+
+local staleInjectedSide = nativeSideScript.updateFn(portugueseNativeCapture, {
+	[SIDE_KEY] = 3,
+	[SIDE_OFFSET_KEY] = 5,
+})
+assertNear(staleInjectedSide.edgeModels[1].model.transf[14], 9, "native side ignores a stale injected side value")
 
 local nativeMultiModelScript = modifyScript("native_multi_model.script", {
 	updateFn = function()
@@ -986,7 +1031,7 @@ local nativeMultiModelScript = modifyScript("native_multi_model.script", {
 		}
 	end,
 })
-local nativeMultiModelOffset = nativeMultiModelScript.updateFn(vanillaCapture, {
+local nativeMultiModelOffset = nativeMultiModelScript.updateFn(portugueseNativeCapture, {
 	[SIDE_OFFSET_KEY] = 2,
 })
 assertNear(
@@ -998,6 +1043,57 @@ assertNear(
 	nativeMultiModelOffset.edgeModels[2].model.transf[14],
 	-3,
 	"native lateral offset shifts auxiliary models consistently"
+)
+
+local sharedTransformScript = modifyScript("shared_transform.script", {
+	updateFn = function()
+		local sharedTransform = identityTransform()
+		local independentTransform = identityTransform()
+		return {
+			signal = { type = "PATH_SIGNAL" },
+			edgeModels = {
+				{
+					model = {
+						id = "::/infrastructure/signal/vanilla.mdl",
+						transf = sharedTransform,
+					},
+				},
+				{
+					model = {
+						id = "::/infrastructure/signal/vanilla.mdl",
+						transf = sharedTransform,
+					},
+				},
+				{
+					model = {
+						id = "::/infrastructure/signal/vanilla.mdl",
+						transf = independentTransform,
+					},
+				},
+			},
+		}
+	end,
+})
+local sharedTransformResult = sharedTransformScript.updateFn(vanillaCapture, {
+	[SIDE_KEY] = 2,
+	[SIDE_OFFSET_KEY] = 0,
+	[HEIGHT_OFFSET_KEY] = 1,
+	[YAW_OFFSET_KEY] = 30,
+})
+local sharedTransform = sharedTransformResult.edgeModels[1].model.transf
+assertEqual(
+	sharedTransformResult.edgeModels[2].model.transf,
+	sharedTransform,
+	"signal components retain their shared transform"
+)
+assertNear(sharedTransform[14], 6, "shared transform receives the lateral shift once")
+assertNear(sharedTransform[15], 1, "shared transform receives the height shift once")
+assertNear(sharedTransform[1], cosine30, "shared transform receives the yaw rotation once")
+assertNear(sharedTransform[2], 0.5, "shared transform preserves the requested yaw")
+assertNear(
+	sharedTransformResult.edgeModels[3].model.transf[14],
+	6,
+	"independent components receive the same lateral shift"
 )
 
 local oneWayScript =

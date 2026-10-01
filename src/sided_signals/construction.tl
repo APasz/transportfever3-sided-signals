@@ -192,14 +192,23 @@ local function isYawOffsetKey(
     return string.sub(normalizedKey, -#ROTATION_SUFFIX) == ROTATION_SUFFIX
 end
 
+local function hasSideMarker(normalizedKey: string): boolean
+    return core.hasMarker(normalizedKey, "side")
+        or core.hasMarker(normalizedKey, "lado")
+end
+
 local function isLateralAdjustmentKey(normalizedKey: string): boolean
-    return core.hasMarker(normalizedKey, "lateral")
+    if core.hasMarker(normalizedKey, "lateral")
         or core.hasMarker(normalizedKey, "setback")
         or core.hasMarker(normalizedKey, "offsety")
         or core.hasMarker(normalizedKey, "yoffset")
-        or (core.hasMarker(normalizedKey, "side")
-            and (core.hasMarker(normalizedKey, "offset")
-                or core.hasMarker(normalizedKey, "distance")))
+    then
+        return true
+    end
+    return hasSideMarker(normalizedKey)
+        and (core.hasMarker(normalizedKey, "offset")
+            or core.hasMarker(normalizedKey, "distance")
+            or core.hasMarker(normalizedKey, "distancia"))
 end
 
 local function isSideKey(
@@ -209,8 +218,7 @@ local function isSideKey(
     if core.hasMarker(normalizedKey, "trackpos") then
         return true
     end
-    return core.hasMarker(normalizedKey, "side")
-        and not isLateralAdjustment
+    return hasSideMarker(normalizedKey) and not isLateralAdjustment
 end
 
 local function inspectParams(params: {api.type.ScriptParam}): ExistingParams
