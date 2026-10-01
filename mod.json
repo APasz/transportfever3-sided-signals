@@ -1,0 +1,32 @@
+{
+    "cosmetic": true,
+    "dependencies": null,
+    "incompatibilities": null,
+    "modId": "apasz_sided_signals",
+    "options": null,
+    "params": [
+        {
+            "defaultIndex": 1,
+            "key": "apasz_sided_signals_advanced_adjustments",
+            "name": "APASZ_SIDED_SIGNALS_ADVANCED",
+            "tooltip": "APASZ_SIDED_SIGNALS_ADVANCED_TOOLTIP",
+            "uiType": "CheckBox",
+            "values": [
+                "APASZ_SIDED_SIGNALS_OFF",
+                "APASZ_SIDED_SIGNALS_ON"
+            ]
+        }
+    ],
+    "postRunScript": {
+        "fileName": "apasz_sided_signals::/mod.script@postRunFn"
+    },
+    "preRunScript": {
+        "fileName": ""
+    },
+    "revision": 1,
+    "runScript": {
+        "fileName": "apasz_sided_signals::/mod.script@runFn"
+    },
+    "severityAdd": "None",
+    "severityRemove": "Warning"
+}

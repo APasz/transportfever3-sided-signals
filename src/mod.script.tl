@@ -1,0 +1,61 @@
+local core = ug_require(
+    "apasz_sided_signals::/sided_signals/core.lua"
+) as SidedSignals.Core
+local construction = ug_require(
+    "apasz_sided_signals::/sided_signals/construction.lua"
+) as SidedSignals.Construction
+local placement = ug_require(
+    "apasz_sided_signals::/sided_signals/placement.lua"
+) as SidedSignals.Placement
+local alignment = ug_require(
+    "apasz_sided_signals::/sided_signals/alignment.lua"
+) as SidedSignals.Alignment
+
+local type ModParams = {string: number}
+local type AllModParams = {string: ModParams}
+local type ConfigDict = {string: string}
+
+local function advancedAdjustmentsEnabled(allModParams: AllModParams | nil): boolean
+    if allModParams == nil then
+        return false
+    end
+    local paramsByMod = allModParams as AllModParams
+    local modParams = paramsByMod[getCurrentModId()]
+    return modParams ~= nil
+        and modParams[core.ADVANCED_ADJUSTMENTS_PARAM_KEY]
+            == core.ADVANCED_ADJUSTMENTS_ON_INDEX
+end
+
+function data(): any
+    return {
+        runFn = function(
+            _captureParams: table,
+            _configDict: ConfigDict,
+            allModParams: AllModParams | nil,
+            _baseConfig: BaseConfig | nil
+        )
+            local includeAdvancedAdjustments = advancedAdjustmentsEnabled(allModParams)
+            addModifier("loadConstruction", function(
+                fileName: string,
+                constructionData: api.type.ConstructionDesc
+            ): api.type.ConstructionDesc
+                return construction.modify(
+                    fileName,
+                    constructionData,
+                    includeAdvancedAdjustments
+                )
+            end)
+            addModifier("loadScript", function(
+                fileName: string,
+                script: any
+            ): any
+                return placement.modifyScript(
+                    fileName,
+                    script,
+                    includeAdvancedAdjustments
+                )
+            end)
+        end,
+        postRunFn = alignment.prepareSignalConstructions,
+    }
+end

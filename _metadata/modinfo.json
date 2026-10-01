@@ -1,0 +1,123 @@
+{
+    "authors": [
+        {
+            "name": "apasz",
+            "role": "CREATOR"
+        }
+    ],
+    "description": "Adds side placement, signed position adjustments, optional height and orientation controls, and signal/waypoint controls to railway signals while preserving compatible controls supplied by other mods.",
+    "localization": {
+        "de": {
+            "description": "Fügt Eisenbahnsignalen Seitenwahl, vorzeichenbehaftete Positionsanpassungen, optionale Höhen- und Ausrichtungsregler sowie Signal-/Wegpunktfunktionen hinzu und bewahrt kompatible Regler anderer Mods.",
+            "name": "Sided Signals",
+            "summary": "Konfigurierbare Platzierung und Funktion für Eisenbahnsignale."
+        },
+        "ru": {
+            "description": "Добавляет железнодорожным сигналам выбор стороны, знаковые настройки положения, дополнительные настройки высоты и ориентации, а также режимы семафора и путевой точки, сохраняя совместимые настройки других модов.",
+            "name": "Sided Signals",
+            "summary": "Настраиваемое размещение и функции железнодорожных сигналов."
+        },
+        "zh_CN": {
+            "description": "为铁路信号灯添加侧边放置、带正负值的位置调整、可选的高度与方向控制以及信号灯/导航点功能，同时保留其他模组提供的兼容控制项。",
+            "name": "Sided Signals",
+            "summary": "可配置铁路信号灯的位置和功能。"
+        },
+        "fr": {
+            "description": "Ajoute aux signaux ferroviaires le choix du côté, des réglages de position signés, des commandes optionnelles de hauteur et d’orientation, ainsi que les fonctions signal/point de passage, tout en conservant les commandes compatibles des autres mods.",
+            "name": "Sided Signals",
+            "summary": "Placement et fonction configurables pour les signaux ferroviaires."
+        },
+        "es": {
+            "description": "Añade a las señales ferroviarias la selección de lado, ajustes de posición con valores positivos y negativos, controles opcionales de altura y orientación, y funciones de señal/punto de ruta, conservando los controles compatibles de otros mods.",
+            "name": "Sided Signals",
+            "summary": "Posición y función configurables para señales ferroviarias."
+        },
+        "it": {
+            "description": "Aggiunge ai segnali ferroviari la scelta del lato, regolazioni di posizione con segno, controlli opzionali di altezza e orientamento e funzioni segnale/tappa, mantenendo i controlli compatibili forniti da altre mod.",
+            "name": "Sided Signals",
+            "summary": "Posizione e funzione configurabili per i segnali ferroviari."
+        },
+        "nl": {
+            "description": "Voegt zijplaatsing, positieve en negatieve positieaanpassingen, optionele hoogte- en oriëntatieregelaars en sein-/routepuntfuncties toe aan spoorseinen, met behoud van compatibele regelaars uit andere mods.",
+            "name": "Sided Signals",
+            "summary": "Instelbare plaatsing en functie voor spoorseinen."
+        },
+        "cs": {
+            "description": "Přidává železničním návěstidlům volbu strany, kladné i záporné úpravy polohy, volitelné ovládání výšky a orientace a funkce návěstidla/trasového bodu, přičemž zachovává kompatibilní ovládací prvky jiných modů.",
+            "name": "Sided Signals",
+            "summary": "Nastavitelné umístění a funkce železničních návěstidel."
+        },
+        "sv": {
+            "description": "Lägger till val av sida, positiva och negativa positionsjusteringar, valfria höjd- och orienteringsreglage samt signal-/vägpunktsfunktioner för järnvägssignaler, samtidigt som kompatibla reglage från andra moddar bevaras.",
+            "name": "Sided Signals",
+            "summary": "Konfigurerbar placering och funktion för järnvägssignaler."
+        },
+        "ro": {
+            "description": "Adaugă semnalelor feroviare alegerea părții, ajustări de poziție cu valori pozitive și negative, comenzi opționale pentru înălțime și orientare și funcții semnal/punct de reper, păstrând comenzile compatibile ale altor moduri.",
+            "name": "Sided Signals",
+            "summary": "Amplasare și funcție configurabile pentru semnalele feroviare."
+        },
+        "fi": {
+            "description": "Lisää rautatieopastimiin puolen valinnan, positiiviset ja negatiiviset sijaintisäädöt, valinnaiset korkeus- ja suuntaussäädöt sekä opastin-/reittipistetoiminnot säilyttäen muiden modien yhteensopivat säädöt.",
+            "name": "Sided Signals",
+            "summary": "Rautatieopastimien sijoittelun ja toiminnon asetukset."
+        },
+        "da": {
+            "description": "Føjer valg af side, positive og negative positionsjusteringer, valgfrie højde- og orienteringskontroller samt signal-/vejpunktsfunktioner til jernbanesignaler, mens kompatible kontroller fra andre mods bevares.",
+            "name": "Sided Signals",
+            "summary": "Konfigurerbar placering og funktion for jernbanesignaler."
+        },
+        "tr": {
+            "description": "Demiryolu sinyallerine taraf seçimi, pozitif ve negatif konum ayarları, isteğe bağlı yükseklik ve yön denetimleri ile sinyal/ara nokta işlevleri ekler; diğer modların uyumlu denetimlerini korur.",
+            "name": "Sided Signals",
+            "summary": "Demiryolu sinyalleri için yapılandırılabilir konum ve işlev."
+        },
+        "et": {
+            "description": "Lisab raudteesignaalidele külje valiku, positiivsed ja negatiivsed asendiseadistused, valikulised kõrguse ja suuna juhtelemendid ning signaali/teekonnapunkti funktsioonid, säilitades teiste modide ühilduvad juhtelemendid.",
+            "name": "Sided Signals",
+            "summary": "Raudteesignaalide seadistatav paigutus ja funktsioon."
+        },
+        "ja": {
+            "description": "鉄道信号に左右の配置、正負の位置調整、オプションの高さ・向き調整、信号・ウェイポイント機能を追加し、他のMODが提供する互換性のある調整項目は維持します。",
+            "name": "Sided Signals",
+            "summary": "鉄道信号の配置と機能を設定できます。"
+        },
+        "hu": {
+            "description": "Oldalválasztást, pozitív és negatív helyzetbeállításokat, választható magasság- és tájolásvezérlőket, valamint jelző-/útvonalpont-funkciókat ad a vasúti jelzőkhöz, miközben megőrzi más modok kompatibilis vezérlőit.",
+            "name": "Sided Signals",
+            "summary": "A vasúti jelzők elhelyezésének és funkciójának beállítása."
+        },
+        "pl": {
+            "description": "Dodaje do sygnalizatorów kolejowych wybór strony, dodatnie i ujemne korekty położenia, opcjonalne ustawienia wysokości i orientacji oraz funkcje sygnalizatora/punktu nawigacyjnego, zachowując zgodne ustawienia innych modów.",
+            "name": "Sided Signals",
+            "summary": "Konfigurowalne położenie i funkcja sygnalizatorów kolejowych."
+        },
+        "id": {
+            "description": "Menambahkan pilihan sisi, penyesuaian posisi positif dan negatif, kontrol ketinggian dan orientasi opsional, serta fungsi sinyal/titik jalan ke sinyal kereta, sambil mempertahankan kontrol kompatibel dari mod lain.",
+            "name": "Sided Signals",
+            "summary": "Penempatan dan fungsi yang dapat diatur untuk sinyal kereta."
+        },
+        "ko": {
+            "description": "철도 신호기에 좌우 배치, 양수 및 음수 위치 조정, 선택적 높이 및 방향 조절, 신호기/중간 지점 기능을 추가하면서 다른 모드가 제공하는 호환 조절 기능은 유지합니다.",
+            "name": "Sided Signals",
+            "summary": "철도 신호기의 배치와 기능을 설정합니다."
+        },
+        "pt_BR": {
+            "description": "Adiciona aos sinais ferroviários seleção de lado, ajustes de posição positivos e negativos, controles opcionais de altura e orientação e funções de sinalização/ponto de referência, preservando controles compatíveis fornecidos por outros mods.",
+            "name": "Sided Signals",
+            "summary": "Posicionamento e função configuráveis para sinais ferroviários."
+        },
+        "zh_TW": {
+            "description": "為鐵路號誌新增側邊放置、帶正負值的位置調整、可選的高度與方向控制以及號誌/定位點功能，同時保留其他模組提供的相容控制項。",
+            "name": "Sided Signals",
+            "summary": "可設定鐵路號誌的位置和功能。"
+        }
+    },
+    "name": "Sided Signals",
+    "summary": "Configurable placement and function for railway signals.",
+    "tags": [
+        "Signal",
+        "Script Mod"
+    ],
+    "url": ""
+}
