@@ -4,15 +4,20 @@ local core = ug_require(
 local metadata = ug_require(
     "apasz_sided_signals::/sided_signals/metadata.lua"
 ) as SidedSignals.Metadata
+local debugLoggingEnabled = ug_require(
+    "apasz_sided_signals::/sided_signals/logging_config.lua"
+) as boolean
+local logging = ug_require(
+    "apasz_sided_signals::/sided_signals/logging.lua"
+) as ModLogging.Module
 
 local normalizeResourceName = core.normalizeResourceName
+local logger = logging.new("Sided Signals", debugLoggingEnabled)
 
 local record ModelAlignmentCollection
     alignments: {string: SidedSignals.ModelAlignment}
     count: integer
 end
-
-local missingModelWarnings: {string: boolean} = {}
 
 local function readModelAlignment(
     modelAlignmentCache: {string: SidedSignals.ModelAlignment},
@@ -82,12 +87,9 @@ end
 
 local function warnMissing(modelId: string)
     local cacheKey = normalizeResourceName(modelId)
-    if missingModelWarnings[cacheKey] then
-        return
-    end
-    missingModelWarnings[cacheKey] = true
-    debugPrint(
-        "[Sided Signals] No captured alignment data for "
+    logger.warnOnce(
+        "missing-alignment:" .. cacheKey,
+        "No captured alignment data for "
             .. modelId
             .. "; preserving its authored side"
     )
@@ -166,8 +168,8 @@ local function addModelAlignment(
         return true
     end
 
-    debugPrint(
-        "[Sided Signals] Cannot prepare alignment data for "
+    logger.warn(
+        "Cannot prepare alignment data for "
             .. modelName
             .. ": "
             .. tostring(value)
@@ -242,8 +244,8 @@ local function collectModelAlignments(
     end
 
     if not hasDirectoryMatch then
-        debugPrint(
-            "[Sided Signals] No nearby model resources found for " .. constructionName
+        logger.warn(
+            "No nearby model resources found for " .. constructionName
         )
     end
     directoryCache[cacheKey] = {
@@ -325,8 +327,8 @@ local function prepareSignalConstructions()
         end
     end
 
-    debugPrint(
-        "[Sided Signals] Prepared lateral alignment for "
+    logger.debug(
+        "Prepared lateral alignment for "
             .. tostring(preparedCount)
             .. " signal constructions ("
             .. tostring(modelReferenceCount)

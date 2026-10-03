@@ -4,8 +4,15 @@ local core = ug_require(
 local modelOverrides = ug_require(
     "apasz_sided_signals::/sided_signals/model_overrides.lua"
 ) as {string: SidedSignals.ModelOverride}
+local debugLoggingEnabled = ug_require(
+    "apasz_sided_signals::/sided_signals/logging_config.lua"
+) as boolean
+local logging = ug_require(
+    "apasz_sided_signals::/sided_signals/logging.lua"
+) as ModLogging.Module
 
 local BOUNDS_MATCH_EPSILON = 0.001
+local logger = logging.new("Sided Signals", debugLoggingEnabled)
 
 local NO_LATERAL_CORRECTION: SidedSignals.LateralCorrection = {
     left = 0,
@@ -33,8 +40,8 @@ local function metadataWithoutCorrection(
 end
 
 local function warn(resourceName: string, issue: string)
-    debugPrint(
-        "[Sided Signals] Invalid "
+    logger.warn(
+        "Invalid "
             .. core.METADATA_KEY
             .. " metadata for "
             .. resourceName
@@ -134,8 +141,8 @@ local function builtInLateralCorrection(
     if math.abs(bounds.bbMin.y - knownOverride.expectedMinY) > BOUNDS_MATCH_EPSILON
         or math.abs(bounds.bbMax.y - knownOverride.expectedMaxY) > BOUNDS_MATCH_EPSILON
     then
-        debugPrint(
-            "[Sided Signals] Ignoring stale built-in lateral correction for "
+        logger.warn(
+            "Ignoring stale built-in lateral correction for "
                 .. modelName
                 .. "; model bounds have changed"
         )
