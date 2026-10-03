@@ -12,6 +12,7 @@ global record SidedSignals
     end
 
     record ResultSignal
+        soundevent: string | nil
         type: string
     end
 
@@ -60,6 +61,7 @@ global record SidedSignals
         PITCH_OFFSET_KEY: string
         ROLL_OFFSET_KEY: string
         MODE_KEY: string
+        WHISTLE_KEY: string
         PARAM_GROUP: string
         PARAM_SCRIPT: string
         HAS_INJECTED_SIDE_CAPTURE_KEY: string
@@ -73,6 +75,9 @@ global record SidedSignals
         MODE_ORIGINAL_INDEX: integer
         MODE_SIGNAL_INDEX: integer
         MODE_WAYPOINT_INDEX: integer
+        WHISTLE_ORIGINAL_INDEX: integer
+        WHISTLE_OFF_INDEX: integer
+        WHISTLE_ON_INDEX: integer
 
         hasMarker: function(string, string): boolean
         isFiniteNumber: function(any): boolean

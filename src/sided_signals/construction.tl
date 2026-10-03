@@ -17,6 +17,7 @@ local record ExistingParams
     hasNativePitchOffset: boolean
     hasNativeRollOffset: boolean
     hasNativeMode: boolean
+    hasNativeWhistle: boolean
     hasSemanticOneWay: boolean
     standardOneWay: api.type.ScriptParam | nil
 end
@@ -30,6 +31,7 @@ local function emptyExistingParams(): ExistingParams
         hasNativePitchOffset = false,
         hasNativeRollOffset = false,
         hasNativeMode = false,
+        hasNativeWhistle = false,
         hasSemanticOneWay = false,
         standardOneWay = nil,
     }
@@ -221,6 +223,12 @@ local function isSideKey(
     return hasSideMarker(normalizedKey) and not isLateralAdjustment
 end
 
+local function isWhistleKey(normalizedKey: string): boolean
+    return core.hasMarker(normalizedKey, "whistle")
+        or core.hasMarker(normalizedKey, "horn")
+        or core.hasMarker(normalizedKey, "soundevent")
+end
+
 local function inspectParams(params: {api.type.ScriptParam}): ExistingParams
     local result = emptyExistingParams()
 
@@ -279,6 +287,9 @@ local function inspectParams(params: {api.type.ScriptParam}): ExistingParams
             end
             if key ~= core.MODE_KEY and core.hasMarker(normalized, "waypoint") then
                 result.hasNativeMode = true
+            end
+            if key ~= core.WHISTLE_KEY and isWhistleKey(normalized) then
+                result.hasNativeWhistle = true
             end
             if core.hasMarker(normalized, "oneway") then
                 result.hasSemanticOneWay = true
@@ -438,6 +449,26 @@ local function appendModeParam(params: {api.type.ScriptParam})
     }
 end
 
+local function appendWhistleParam(params: {api.type.ScriptParam})
+    params[#params + 1] = {
+        key = core.WHISTLE_KEY,
+        name = _("APASZ_SIDED_SIGNALS_WHISTLE"),
+        tooltip = _("APASZ_SIDED_SIGNALS_WHISTLE_TOOLTIP"),
+        values = {
+            _("APASZ_SIDED_SIGNALS_ORIGINAL"),
+            _("APASZ_SIDED_SIGNALS_OFF"),
+            _("APASZ_SIDED_SIGNALS_ON"),
+        },
+        uiType = "Button" as api.type.enum.ScriptParamType,
+        displayMode = "Horizontal" as api.type.enum.ScriptParamDisplayMode,
+        group = core.PARAM_GROUP,
+        defaultIndex = core.WHISTLE_ORIGINAL_INDEX,
+        postConstructionModifiable = true,
+        yearFrom = 0,
+        yearTo = 0,
+    }
+end
+
 local function signalOnlyCheck(originalIsSignal: boolean): api.type.ScriptRef
     return {
         fileName = core.PARAM_SCRIPT .. "@signalOnly",
@@ -557,6 +588,11 @@ local function modify(
     if not hasModMode and not existing.hasNativeMode then
         appendModeParam(signalParams)
         hasModMode = true
+    end
+    if not core.hasParam(signalParams, core.WHISTLE_KEY)
+        and not existing.hasNativeWhistle
+    then
+        appendWhistleParam(signalParams)
     end
     if hasModMode and not existing.hasNativeMode then
         configureOneWayParam(signalParams, existing)

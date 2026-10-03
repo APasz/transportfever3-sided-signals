@@ -8,6 +8,10 @@ local YAW_OFFSET_KEY = "apasz_sided_signals_yaw_offset"
 local PITCH_OFFSET_KEY = "apasz_sided_signals_pitch_offset"
 local ROLL_OFFSET_KEY = "apasz_sided_signals_roll_offset"
 local MODE_KEY = "apasz_sided_signals_mode"
+local WHISTLE_KEY = "apasz_sided_signals_whistle"
+local WHISTLE_ORIGINAL_INDEX = 1
+local WHISTLE_OFF_INDEX = 2
+local WHISTLE_ON_INDEX = 3
 local HAS_INJECTED_SIDE_CAPTURE_KEY = "apasz_sided_signals_has_injected_side"
 local MODEL_ALIGNMENTS_CAPTURE_KEY = "apasz_sided_signals_model_alignments"
 local METADATA_KEY = "apasz_sided_signals"
@@ -263,7 +267,7 @@ local vanilla = {
 }
 modifyConstruction("infrastructure/signal/signal_path_a.con", vanilla)
 
-assertEqual(#vanilla.params, 9, "vanilla parameters added once")
+assertEqual(#vanilla.params, 10, "vanilla parameters added once")
 assertEqual(parameter(vanilla.params, SIDE_KEY).defaultIndex, 1, "original side is the default")
 local sideOffset = parameter(vanilla.params, SIDE_OFFSET_KEY)
 assertEqual(sideOffset.defaultIndex, 11, "zero lateral offset is the default")
@@ -357,11 +361,15 @@ assertEqual(
 )
 assertNil(rollOffset.checkEnabledScript, "roll is available without a per-signal toggle")
 assertEqual(parameter(vanilla.params, MODE_KEY).defaultIndex, 1, "original function is the default")
+local whistle = parameter(vanilla.params, WHISTLE_KEY)
+assertEqual(whistle.defaultIndex, WHISTLE_ORIGINAL_INDEX, "original whistle behaviour is the default")
+assertEqual(#whistle.values, 3, "whistle supports default, off, and on")
+assertEqual(whistle.postConstructionModifiable, true, "whistle can be edited later")
 assertEqual(vanillaOneWay.postConstructionModifiable, true, "vanilla one-way can be edited later")
 assertEqual(vanillaOneWay.checkEnabledScript.params.originalIsSignal, true, "vanilla defaults to a signal")
 
 modifyConstruction("infrastructure/signal/signal_path_a.con", vanilla)
-assertEqual(#vanilla.params, 9, "construction modifier is idempotent")
+assertEqual(#vanilla.params, 10, "construction modifier is idempotent")
 
 mod.runFn({}, {}, {
 	[MOD_ID] = {
@@ -376,10 +384,11 @@ local basicSignal = {
 	params = {},
 }
 modifyConstructionWithoutAdvanced("infrastructure/signal/basic.con", basicSignal)
-assertEqual(#basicSignal.params, 5, "disabled advanced adjustments add only the core controls")
+assertEqual(#basicSignal.params, 6, "disabled advanced adjustments add only the core controls")
 assertEqual(parameter(basicSignal.params, SIDE_KEY) ~= nil, true, "disabled advanced settings retain side")
 assertEqual(parameter(basicSignal.params, OFFSET_KEY) ~= nil, true, "disabled advanced settings retain track offset")
 assertEqual(parameter(basicSignal.params, MODE_KEY) ~= nil, true, "disabled advanced settings retain function")
+assertEqual(parameter(basicSignal.params, WHISTLE_KEY) ~= nil, true, "disabled advanced settings retain whistle")
 local basicSideOffset = parameter(basicSignal.params, SIDE_OFFSET_KEY)
 assertEqual(basicSideOffset.values == sideOffset.values, false, "cached labels remain construction-local")
 assertEqual(basicSideOffset.numbers == sideOffset.numbers, false, "cached numbers remain construction-local")
@@ -472,11 +481,12 @@ local fullyParameterized = {
 		{ key = "mw_rotation_y" },
 		{ key = "mw_rotation_x" },
 		{ key = "mw_waypoint" },
+		{ key = "mw_whistle" },
 		{ key = "mw_oneway" },
 	},
 }
 modifyConstruction("infrastructure/signal/custom.con", fullyParameterized)
-assertEqual(#fullyParameterized.params, 9, "only lateral offset is added to a fully parameterized signal")
+assertEqual(#fullyParameterized.params, 10, "only lateral offset is added to a fully parameterized signal")
 assertEqual(
 	parameter(fullyParameterized.params, SIDE_OFFSET_KEY).numbers[51],
 	20,
@@ -486,6 +496,22 @@ assertNil(parameter(fullyParameterized.params, HEIGHT_OFFSET_KEY), "native heigh
 assertNil(parameter(fullyParameterized.params, YAW_OFFSET_KEY), "native yaw is not duplicated")
 assertNil(parameter(fullyParameterized.params, PITCH_OFFSET_KEY), "native pitch is not duplicated")
 assertNil(parameter(fullyParameterized.params, ROLL_OFFSET_KEY), "native roll is not duplicated")
+assertNil(parameter(fullyParameterized.params, WHISTLE_KEY), "native whistle is not duplicated")
+
+for _, nativeWhistleKey in ipairs({ "signal_whistle", "signal_horn", "signal_sound_event" }) do
+	local nativeWhistleControl = {
+		edgeObject = { snapToTrack = true },
+		menuCategory = { categories = { { category = "rail_signals" } } },
+		params = {
+			{ key = nativeWhistleKey },
+		},
+	}
+	modifyConstruction("infrastructure/signal/native_whistle.con", nativeWhistleControl)
+	assertNil(
+		parameter(nativeWhistleControl.params, WHISTLE_KEY),
+		"native whistle marker is not duplicated: " .. nativeWhistleKey
+	)
+end
 
 local modelHeightControl = {
 	edgeObject = { snapToTrack = true },
@@ -599,11 +625,14 @@ local unrelatedInvalidMetadata = {
 modifyConstruction("infrastructure/depot_with_metadata.con", unrelatedInvalidMetadata)
 assertEqual(#warnings, unrelatedWarningCount, "metadata is validated only for railway signals")
 
-local function makeSignalScript(modelId, modelY, signalType, scaleY)
+local function makeSignalScript(modelId, modelY, signalType, scaleY, soundevent)
 	return {
 		updateFn = function()
 			return {
-				signal = { type = signalType or "PATH_SIGNAL" },
+				signal = {
+					type = signalType or "PATH_SIGNAL",
+					soundevent = soundevent,
+				},
 				edgeModels = {
 					{
 						edgeOffset = 2,
@@ -636,6 +665,10 @@ local advancedDisabledScript =
 	modifyScriptWithoutAdvanced("advanced_disabled.script", makeSignalScript("::/infrastructure/signal/vanilla.mdl", 0))
 local normalizedIdScript =
 	modifyScript("normalized_id.script", makeSignalScript("::\\INFRASTRUCTURE\\SIGNAL\\VANILLA.MDL", 0))
+local authoredWhistleScript = modifyScript(
+	"authored_whistle.script",
+	makeSignalScript("::/infrastructure/signal/vanilla.mdl", 0, nil, nil, "custom_horn")
+)
 
 local vanillaScriptRef = "::/infrastructure/signal/signal_path_a.script@updateFn"
 local positiveScriptRef = "yomiti1225_railway_signal::/infrastructure/signal/japanese_signal.script@updateFn"
@@ -772,6 +805,40 @@ assertEqual(unchanged.signal.type, "PATH_SIGNAL", "original mode preserved")
 assertNear(unchanged.edgeModels[1].model.transf[14], 0, "original side preserved")
 assertNear(unchanged.edgeModels[1].edgeOffset, 2, "zero offset preserved")
 assertEqual(defaultCaptureReads, 0, "default settings bypass alignment processing")
+
+local preservedWhistle = authoredWhistleScript.updateFn(vanillaCapture, {
+	[SIDE_OFFSET_KEY] = 0,
+	[WHISTLE_KEY] = WHISTLE_ORIGINAL_INDEX,
+})
+assertEqual(preservedWhistle.signal.soundevent, "custom_horn", "default preserves the authored sound event")
+
+local enabledWhistle = vanillaScript.updateFn(vanillaCapture, {
+	[SIDE_OFFSET_KEY] = 0,
+	[MODE_KEY] = 2,
+	[WHISTLE_KEY] = WHISTLE_ON_INDEX,
+})
+assertEqual(enabledWhistle.signal.type, "PATH_SIGNAL", "whistle is independent of signal mode")
+assertEqual(enabledWhistle.signal.soundevent, "horn", "whistle enables the vehicle horn event")
+
+local disabledWhistle = authoredWhistleScript.updateFn(vanillaCapture, {
+	[SIDE_OFFSET_KEY] = 0,
+	[WHISTLE_KEY] = WHISTLE_OFF_INDEX,
+})
+assertEqual(disabledWhistle.signal.soundevent, "", "whistle can disable an authored sound event")
+
+local waypointWhistle = vanillaScript.updateFn(vanillaCapture, {
+	[SIDE_OFFSET_KEY] = 0,
+	[MODE_KEY] = 3,
+	[WHISTLE_KEY] = WHISTLE_ON_INDEX,
+})
+assertEqual(waypointWhistle.signal.type, "WAYPOINT", "whistle is independent of waypoint mode")
+assertEqual(waypointWhistle.signal.soundevent, "horn", "waypoints can trigger the vehicle horn event")
+
+local invalidWhistle = authoredWhistleScript.updateFn(vanillaCapture, {
+	[SIDE_OFFSET_KEY] = 0,
+	[WHISTLE_KEY] = 99,
+})
+assertEqual(invalidWhistle.signal.soundevent, "custom_horn", "invalid whistle falls back to Default")
 
 local invalidValues = vanillaScript.updateFn(vanillaCapture, {
 	[SIDE_KEY] = 99,
@@ -1102,8 +1169,10 @@ local remainsOneWay = oneWayScript.updateFn(vanillaCapture, {
 	[SIDE_KEY] = 1,
 	[SIDE_OFFSET_KEY] = 0,
 	[MODE_KEY] = 2,
+	[WHISTLE_KEY] = WHISTLE_ON_INDEX,
 })
 assertEqual(remainsOneWay.signal.type, "ONE_WAY_PATH_SIGNAL", "full override preserves native one-way type")
+assertEqual(remainsOneWay.signal.soundevent, "horn", "one-way signals support the whistle event")
 
 local missingModelScript = modifyScript("missing_model.script", makeSignalScript("missing.mdl", 0))
 warnings = {}

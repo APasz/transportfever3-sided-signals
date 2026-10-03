@@ -13,12 +13,16 @@ local YAW_OFFSET_KEY = core.YAW_OFFSET_KEY
 local PITCH_OFFSET_KEY = core.PITCH_OFFSET_KEY
 local ROLL_OFFSET_KEY = core.ROLL_OFFSET_KEY
 local MODE_KEY = core.MODE_KEY
+local WHISTLE_KEY = core.WHISTLE_KEY
 local SIDE_ORIGINAL_INDEX = core.SIDE_ORIGINAL_INDEX
 local SIDE_LEFT_INDEX = core.SIDE_LEFT_INDEX
 local SIDE_RIGHT_INDEX = core.SIDE_RIGHT_INDEX
 local MODE_ORIGINAL_INDEX = core.MODE_ORIGINAL_INDEX
 local MODE_SIGNAL_INDEX = core.MODE_SIGNAL_INDEX
 local MODE_WAYPOINT_INDEX = core.MODE_WAYPOINT_INDEX
+local WHISTLE_ORIGINAL_INDEX = core.WHISTLE_ORIGINAL_INDEX
+local WHISTLE_OFF_INDEX = core.WHISTLE_OFF_INDEX
+local WHISTLE_ON_INDEX = core.WHISTLE_ON_INDEX
 local isFiniteNumber = core.isFiniteNumber
 local finiteNumberOr = core.finiteNumberOr
 local findCapturedAlignment = alignment.findCaptured
@@ -51,6 +55,8 @@ local TRANSFORM_BASIS_INDICES: {integer} = {
 local PATH_SIGNAL_TYPE = "PATH_SIGNAL"
 local ONE_WAY_PATH_SIGNAL_TYPE = "ONE_WAY_PATH_SIGNAL"
 local WAYPOINT_TYPE = "WAYPOINT"
+local HORN_SOUND_EVENT = "horn"
+local NO_SOUND_EVENT = ""
 
 local enum SideChoice
     "Original"
@@ -62,6 +68,12 @@ local enum SignalMode
     "Original"
     "Signal"
     "Waypoint"
+end
+
+local enum WhistleChoice
+    "Original"
+    "Off"
+    "On"
 end
 
 local record LoadedScript
@@ -78,6 +90,12 @@ local MODE_BY_INDEX: {integer: SignalMode} = {
     [MODE_ORIGINAL_INDEX] = "Original",
     [MODE_SIGNAL_INDEX] = "Signal",
     [MODE_WAYPOINT_INDEX] = "Waypoint",
+}
+
+local WHISTLE_BY_INDEX: {integer: WhistleChoice} = {
+    [WHISTLE_ORIGINAL_INDEX] = "Original",
+    [WHISTLE_OFF_INDEX] = "Off",
+    [WHISTLE_ON_INDEX] = "On",
 }
 
 local function selectedIndex(
@@ -356,12 +374,20 @@ local function requestsAdjustment(
             return true
         end
     end
-    return selectedIndex(
+    if selectedIndex(
         params,
         MODE_KEY,
         MODE_ORIGINAL_INDEX,
         MODE_WAYPOINT_INDEX
-    ) ~= MODE_ORIGINAL_INDEX
+    ) ~= MODE_ORIGINAL_INDEX then
+        return true
+    end
+    return selectedIndex(
+        params,
+        WHISTLE_KEY,
+        WHISTLE_ORIGINAL_INDEX,
+        WHISTLE_ON_INDEX
+    ) ~= WHISTLE_ORIGINAL_INDEX
 end
 
 local function applyLongitudinalOffset(
@@ -570,6 +596,31 @@ local function applySignalMode(
     end
 end
 
+local function applyWhistle(
+    result: SidedSignals.SignalResult,
+    params: SidedSignals.ConstructionParams
+)
+    local rawSignal = result.signal
+    if rawSignal == nil or params[WHISTLE_KEY] == nil then
+        return
+    end
+    local signal = rawSignal as SidedSignals.ResultSignal
+
+    local whistle = WHISTLE_BY_INDEX[
+        selectedIndex(
+            params,
+            WHISTLE_KEY,
+            WHISTLE_ORIGINAL_INDEX,
+            WHISTLE_ON_INDEX
+        )
+    ]
+    if whistle == "On" then
+        signal.soundevent = HORN_SOUND_EVENT
+    elseif whistle == "Off" then
+        signal.soundevent = NO_SOUND_EVENT
+    end
+end
+
 local function modifyUpdateResult(
     captureParams: any,
     params: SidedSignals.ConstructionParams,
@@ -586,6 +637,7 @@ local function modifyUpdateResult(
     end
 
     applySignalMode(result, params)
+    applyWhistle(result, params)
     applyLongitudinalOffset(result, params)
     if includeAdvancedAdjustments then
         applyHeightOffset(result, params)

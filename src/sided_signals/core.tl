@@ -52,6 +52,7 @@ local M: SidedSignals.Core = {
     PITCH_OFFSET_KEY = "apasz_sided_signals_pitch_offset",
     ROLL_OFFSET_KEY = "apasz_sided_signals_roll_offset",
     MODE_KEY = "apasz_sided_signals_mode",
+    WHISTLE_KEY = "apasz_sided_signals_whistle",
     PARAM_GROUP = "apasz_sided_signals",
     PARAM_SCRIPT = "apasz_sided_signals::/sided_signals/params.gui",
     HAS_INJECTED_SIDE_CAPTURE_KEY = "apasz_sided_signals_has_injected_side",
@@ -65,6 +66,9 @@ local M: SidedSignals.Core = {
     MODE_ORIGINAL_INDEX = 1,
     MODE_SIGNAL_INDEX = 2,
     MODE_WAYPOINT_INDEX = 3,
+    WHISTLE_ORIGINAL_INDEX = 1,
+    WHISTLE_OFF_INDEX = 2,
+    WHISTLE_ON_INDEX = 3,
 
     hasMarker = hasMarker,
     isFiniteNumber = isFiniteNumber,

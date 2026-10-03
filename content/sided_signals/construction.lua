@@ -25,6 +25,7 @@ local function emptyExistingParams()
 		hasNativePitchOffset = false,
 		hasNativeRollOffset = false,
 		hasNativeMode = false,
+		hasNativeWhistle = false,
 		hasSemanticOneWay = false,
 		standardOneWay = nil,
 	}
@@ -190,6 +191,12 @@ local function isSideKey(normalizedKey, isLateralAdjustment)
 	return hasSideMarker(normalizedKey) and not isLateralAdjustment
 end
 
+local function isWhistleKey(normalizedKey)
+	return core.hasMarker(normalizedKey, "whistle")
+		or core.hasMarker(normalizedKey, "horn")
+		or core.hasMarker(normalizedKey, "soundevent")
+end
+
 local function inspectParams(params)
 	local result = emptyExistingParams()
 
@@ -243,6 +250,9 @@ local function inspectParams(params)
 			end
 			if key ~= core.MODE_KEY and core.hasMarker(normalized, "waypoint") then
 				result.hasNativeMode = true
+			end
+			if key ~= core.WHISTLE_KEY and isWhistleKey(normalized) then
+				result.hasNativeWhistle = true
 			end
 			if core.hasMarker(normalized, "oneway") then
 				result.hasSemanticOneWay = true
@@ -385,6 +395,26 @@ local function appendModeParam(params)
 	}
 end
 
+local function appendWhistleParam(params)
+	params[#params + 1] = {
+		key = core.WHISTLE_KEY,
+		name = _("APASZ_SIDED_SIGNALS_WHISTLE"),
+		tooltip = _("APASZ_SIDED_SIGNALS_WHISTLE_TOOLTIP"),
+		values = {
+			_("APASZ_SIDED_SIGNALS_ORIGINAL"),
+			_("APASZ_SIDED_SIGNALS_OFF"),
+			_("APASZ_SIDED_SIGNALS_ON"),
+		},
+		uiType = "Button",
+		displayMode = "Horizontal",
+		group = core.PARAM_GROUP,
+		defaultIndex = core.WHISTLE_ORIGINAL_INDEX,
+		postConstructionModifiable = true,
+		yearFrom = 0,
+		yearTo = 0,
+	}
+end
+
 local function signalOnlyCheck(originalIsSignal)
 	return {
 		fileName = core.PARAM_SCRIPT .. "@signalOnly",
@@ -481,6 +511,9 @@ local function modify(fileName, constructionData, includeAdvancedAdjustments)
 	if not hasModMode and not existing.hasNativeMode then
 		appendModeParam(signalParams)
 		hasModMode = true
+	end
+	if not core.hasParam(signalParams, core.WHISTLE_KEY) and not existing.hasNativeWhistle then
+		appendWhistleParam(signalParams)
 	end
 	if hasModMode and not existing.hasNativeMode then
 		configureOneWayParam(signalParams, existing)
