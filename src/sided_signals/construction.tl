@@ -8,6 +8,10 @@ local metadata = ug_require(
 local ONE_WAY_DISABLED_INDEX = 2
 local STANDARD_ONE_WAY_KEY = "oneWay"
 local ROTATION_SUFFIX = "rotation"
+local LOCALIZED_SIDE_KEYS: {string: boolean} = {
+    nseite = true,
+    pozycja = true,
+}
 
 local record ExistingParams
     hasNativeSide: boolean
@@ -217,7 +221,9 @@ local function isSideKey(
     normalizedKey: string,
     isLateralAdjustment: boolean
 ): boolean
-    if core.hasMarker(normalizedKey, "trackpos") then
+    if LOCALIZED_SIDE_KEYS[normalizedKey]
+        or core.hasMarker(normalizedKey, "trackpos")
+    then
         return true
     end
     return hasSideMarker(normalizedKey) and not isLateralAdjustment

@@ -15,6 +15,10 @@ local metadata = ug_require("apasz_sided_signals::/sided_signals/metadata.lua")
 local ONE_WAY_DISABLED_INDEX = 2
 local STANDARD_ONE_WAY_KEY = "oneWay"
 local ROTATION_SUFFIX = "rotation"
+local LOCALIZED_SIDE_KEYS = {
+	nseite = true,
+	pozycja = true,
+}
 
 local function emptyExistingParams()
 	return {
@@ -185,7 +189,7 @@ local function isLateralAdjustmentKey(normalizedKey)
 end
 
 local function isSideKey(normalizedKey, isLateralAdjustment)
-	if core.hasMarker(normalizedKey, "trackpos") then
+	if LOCALIZED_SIDE_KEYS[normalizedKey] or core.hasMarker(normalizedKey, "trackpos") then
 		return true
 	end
 	return hasSideMarker(normalizedKey) and not isLateralAdjustment

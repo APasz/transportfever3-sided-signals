@@ -23,7 +23,7 @@
     "preRunScript": {
         "fileName": ""
     },
-    "revision": 3,
+    "revision": 4,
     "runScript": {
         "fileName": "apasz_sided_signals::/mod.script@runFn"
     },
@@ -33,6 +33,7 @@
         "6418599",
         "6413987",
         "6378133",
-        "6421374"
+        "6421374",
+        "6424471"
     ]
 }

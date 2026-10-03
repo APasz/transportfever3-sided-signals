@@ -455,20 +455,25 @@ assertEqual(
 	"native waypoint stays a waypoint by default"
 )
 
-local portugueseNativeSide = {
-	edgeObject = { snapToTrack = true },
-	menuCategory = { categories = { { category = "rail_signals" } } },
-	params = {
-		{ key = "joao_sa_lado" },
-	},
-}
-modifyConstruction("infrastructure/signals/sinal_alto/sinal_alto.con", portugueseNativeSide)
-assertNil(parameter(portugueseNativeSide.params, SIDE_KEY), "Portuguese native side is not duplicated")
-assertEqual(
-	parameter(portugueseNativeSide.params, SIDE_OFFSET_KEY).checkEnabledScript.params.hasNativeSide,
-	true,
-	"Portuguese native side enables lateral offset"
-)
+local nativeSideConstructions = {}
+for _, nativeSideKey in ipairs({ "joao_sa_lado", "n_seite", "pozycja" }) do
+	local nativeSideConstruction = {
+		edgeObject = { snapToTrack = true },
+		menuCategory = { categories = { { category = "rail_signals" } } },
+		params = {
+			{ key = nativeSideKey },
+		},
+	}
+	modifyConstruction("infrastructure/signal/native_side.con", nativeSideConstruction)
+	assertNil(parameter(nativeSideConstruction.params, SIDE_KEY), "native side is not duplicated: " .. nativeSideKey)
+	assertEqual(
+		parameter(nativeSideConstruction.params, SIDE_OFFSET_KEY).checkEnabledScript.params.hasNativeSide,
+		true,
+		"native side enables lateral offset: " .. nativeSideKey
+	)
+	nativeSideConstructions[nativeSideKey] = nativeSideConstruction
+end
+local portugueseNativeSide = nativeSideConstructions.joao_sa_lado
 
 local fullyParameterized = {
 	edgeObject = { snapToTrack = true },
