@@ -5,7 +5,7 @@ Adds reusable construction parameters to Transport Fever 3 railway signals:
 - default, left, or right model placement;
 - −5–20 m of signed lateral offset in 0.5 m steps;
 - −20–20 m of signed track offset;
-- optional advanced adjustments, enabled from the mod settings;
+- optional advanced adjustments, shown with an in-game construction toggle;
 - −7.5–7.5 m of vertical adjustment in 0.25 m steps when enabled;
 - −30–30° of yaw adjustment in 1° steps when enabled;
 - −15–15° of pitch and roll adjustment in 1° steps when enabled;
@@ -13,7 +13,7 @@ Adds reusable construction parameters to Transport Fever 3 railway signals:
 - Default, Off, or On whistle behaviour for passing trains; and
 - the game's standard one-way option for signals.
 
-The default values preserve each signal's original appearance and behaviour. Existing side, track offset, height offset, yaw, pitch, roll, waypoint, whistle, and one-way controls from other mods are retained rather than duplicated. Advanced adjustments are disabled by default; enable them in this mod's settings before creating or loading a game to add and apply the four extra controls.
+The default values preserve each signal's original appearance and behaviour. Existing side, track offset, height offset, yaw, pitch, roll, waypoint, whistle, and one-way controls from other mods are retained rather than duplicated. Advanced adjustments are disabled by default. The mod setting controls their initial visibility when a game loads; the construction-menu toggle can show or hide them for the current session.
 
 Whistle is independent of the selected function, so both signals and waypoints can trigger it. On uses the game's `horn` sound event, Off clears an authored sound event, and Default leaves the original value unchanged.
 

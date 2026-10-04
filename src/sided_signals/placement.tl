@@ -390,6 +390,19 @@ local function requestsAdjustment(
     ) ~= WHISTLE_ORIGINAL_INDEX
 end
 
+local function advancedAdjustmentsEnabled(
+    params: SidedSignals.ConstructionParams,
+    enabledByDefault: boolean
+): boolean
+    local selectedAdvancedIndex = params[core.ADVANCED_ADJUSTMENTS_PARAM_KEY]
+    if selectedAdvancedIndex == nil then
+        -- Constructions saved before the in-menu toggle use the original
+        -- global setting so existing adjustments keep their behaviour.
+        return enabledByDefault
+    end
+    return selectedAdvancedIndex == core.ADVANCED_ADJUSTMENTS_ON_INDEX
+end
+
 local function applyLongitudinalOffset(
     result: SidedSignals.SignalResult,
     params: SidedSignals.ConstructionParams
@@ -652,7 +665,7 @@ end
 local function modifyScript(
     _fileName: string,
     script: any,
-    includeAdvancedAdjustments: boolean
+    advancedAdjustmentsEnabledByDefault: boolean
 ): any
     if type(script) ~= "table" then
         return script
@@ -672,6 +685,10 @@ local function modifyScript(
         end
 
         local params = rawParams as SidedSignals.ConstructionParams
+        local includeAdvancedAdjustments = advancedAdjustmentsEnabled(
+            params,
+            advancedAdjustmentsEnabledByDefault
+        )
         if params[SIDE_OFFSET_KEY] == nil
             or not requestsAdjustment(
                 captureParams,

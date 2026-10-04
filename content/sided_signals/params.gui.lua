@@ -8,6 +8,14 @@ local function formatDegrees(_capturedParams, value)
 	return core.formatDegrees(value)
 end
 
+local function advancedAdjustmentsVisible(_capturedParams, params)
+	if params[core.ADVANCED_ADJUSTMENTS_PARAM_KEY] == core.ADVANCED_ADJUSTMENTS_ON_INDEX then
+		return "Enabled"
+	end
+
+	return "InputActionOnly"
+end
+
 local function sideOffsetEnabled(capturedParams, params)
 	if capturedParams.hasNativeSide then
 		return "Enabled"
@@ -38,6 +46,7 @@ function data()
 	return {
 		formatMetres = formatMetres,
 		formatDegrees = formatDegrees,
+		advancedAdjustmentsVisible = advancedAdjustmentsVisible,
 		sideOffsetEnabled = sideOffsetEnabled,
 		signalOnly = signalOnly,
 	}

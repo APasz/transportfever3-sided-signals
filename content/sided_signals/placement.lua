@@ -290,6 +290,14 @@ local function requestsAdjustment(captureParams, params, includeAdvancedAdjustme
 	return selectedIndex(params, WHISTLE_KEY, WHISTLE_ORIGINAL_INDEX, WHISTLE_ON_INDEX) ~= WHISTLE_ORIGINAL_INDEX
 end
 
+local function advancedAdjustmentsEnabled(params, enabledByDefault)
+	local selectedAdvancedIndex = params[core.ADVANCED_ADJUSTMENTS_PARAM_KEY]
+	if selectedAdvancedIndex == nil then
+		return enabledByDefault
+	end
+	return selectedAdvancedIndex == core.ADVANCED_ADJUSTMENTS_ON_INDEX
+end
+
 local function applyLongitudinalOffset(result, params)
 	local offset = selectedNumber(params, LONGITUDINAL_OFFSET_KEY)
 	if offset == 0 or result.edgeModels == nil then
@@ -440,7 +448,7 @@ local function modifyUpdateResult(captureParams, params, includeAdvancedAdjustme
 	return rawResult, ...
 end
 
-local function modifyScript(_fileName, script, includeAdvancedAdjustments)
+local function modifyScript(_fileName, script, advancedAdjustmentsEnabledByDefault)
 	if type(script) ~= "table" then
 		return script
 	end
@@ -459,6 +467,8 @@ local function modifyScript(_fileName, script, includeAdvancedAdjustments)
 		end
 
 		local params = rawParams
+		local includeAdvancedAdjustments = advancedAdjustmentsEnabled(params, advancedAdjustmentsEnabledByDefault)
+
 		if
 			params[SIDE_OFFSET_KEY] == nil
 			or not requestsAdjustment(captureParams, params, includeAdvancedAdjustments)

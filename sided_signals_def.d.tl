@@ -52,6 +52,7 @@ global record SidedSignals
 
     record Core
         ADVANCED_ADJUSTMENTS_PARAM_KEY: string
+        ADVANCED_ADJUSTMENTS_OFF_INDEX: integer
         ADVANCED_ADJUSTMENTS_ON_INDEX: integer
         SIDE_KEY: string
         SIDE_OFFSET_KEY: string

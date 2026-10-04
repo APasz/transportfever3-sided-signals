@@ -27,6 +27,20 @@ local function formatDegrees(_capturedParams: table, value: number): string
     return core.formatDegrees(value)
 end
 
+local function advancedAdjustmentsVisible(
+    _capturedParams: table,
+    params: ConstructionParams
+): CheckEnabledResult
+    if params[core.ADVANCED_ADJUSTMENTS_PARAM_KEY]
+        == core.ADVANCED_ADJUSTMENTS_ON_INDEX
+    then
+        return "Enabled" as CheckEnabledResult
+    end
+    -- "Hidden" and "InputActionOnly" both omit the control from the menu, but
+    -- the game drops only "Hidden" values and can consequently reset the toggle.
+    return "InputActionOnly" as CheckEnabledResult
+end
+
 local function sideOffsetEnabled(
     capturedParams: SideOffsetCapture,
     params: ConstructionParams
@@ -63,6 +77,7 @@ function data(): any
     return {
         formatMetres = formatMetres,
         formatDegrees = formatDegrees,
+        advancedAdjustmentsVisible = advancedAdjustmentsVisible,
         sideOffsetEnabled = sideOffsetEnabled,
         signalOnly = signalOnly,
     }

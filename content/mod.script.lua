@@ -18,12 +18,13 @@ end
 function data()
 	return {
 		runFn = function(_captureParams, _configDict, allModParams, _baseConfig)
-			local includeAdvancedAdjustments = advancedAdjustmentsEnabled(allModParams)
+			local advancedAdjustmentsEnabledByDefault = advancedAdjustmentsEnabled(allModParams)
+
 			addModifier("loadConstruction", function(fileName, constructionData)
-				return construction.modify(fileName, constructionData, includeAdvancedAdjustments)
+				return construction.modify(fileName, constructionData, advancedAdjustmentsEnabledByDefault)
 			end)
 			addModifier("loadScript", function(fileName, script)
-				return placement.modifyScript(fileName, script, includeAdvancedAdjustments)
+				return placement.modifyScript(fileName, script, advancedAdjustmentsEnabledByDefault)
 			end)
 		end,
 		postRunFn = alignment.prepareSignalConstructions,

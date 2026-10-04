@@ -34,7 +34,9 @@ function data(): any
             allModParams: AllModParams | nil,
             _baseConfig: BaseConfig | nil
         )
-            local includeAdvancedAdjustments = advancedAdjustmentsEnabled(allModParams)
+            local advancedAdjustmentsEnabledByDefault = advancedAdjustmentsEnabled(
+                allModParams
+            )
             addModifier("loadConstruction", function(
                 fileName: string,
                 constructionData: api.type.ConstructionDesc
@@ -42,7 +44,7 @@ function data(): any
                 return construction.modify(
                     fileName,
                     constructionData,
-                    includeAdvancedAdjustments
+                    advancedAdjustmentsEnabledByDefault
                 )
             end)
             addModifier("loadScript", function(
@@ -52,7 +54,7 @@ function data(): any
                 return placement.modifyScript(
                     fileName,
                     script,
-                    includeAdvancedAdjustments
+                    advancedAdjustmentsEnabledByDefault
                 )
             end)
         end,

@@ -367,6 +367,41 @@ local function appendNumericParam(params, spec)
 	return parameter
 end
 
+local function advancedAdjustmentsDefaultIndex(defaultEnabled)
+	return defaultEnabled and core.ADVANCED_ADJUSTMENTS_ON_INDEX or core.ADVANCED_ADJUSTMENTS_OFF_INDEX
+end
+
+local function advancedAdjustmentsVisibilityCheck()
+	return {
+		fileName = core.PARAM_SCRIPT .. "@advancedAdjustmentsVisible",
+		params = {},
+	}
+end
+
+local function appendAdvancedAdjustmentsParam(params, defaultEnabled)
+	params[#params + 1] = {
+		key = core.ADVANCED_ADJUSTMENTS_PARAM_KEY,
+		name = _("APASZ_SIDED_SIGNALS_ADVANCED"),
+		tooltip = _("APASZ_SIDED_SIGNALS_ADVANCED_TOOLTIP"),
+		values = {
+			_("APASZ_SIDED_SIGNALS_OFF"),
+			_("APASZ_SIDED_SIGNALS_ON"),
+		},
+		uiType = "CheckBox",
+		displayMode = "Horizontal",
+		group = core.PARAM_GROUP,
+		defaultIndex = advancedAdjustmentsDefaultIndex(defaultEnabled),
+		postConstructionModifiable = true,
+		yearFrom = 0,
+		yearTo = 0,
+	}
+end
+
+local function appendAdvancedNumericParam(params, spec)
+	local parameter = appendNumericParam(params, spec)
+	parameter.checkEnabledScript = advancedAdjustmentsVisibilityCheck()
+end
+
 local function appendSideOffsetParam(params, hasNativeSide)
 	local parameter = appendNumericParam(params, SIDE_OFFSET_SPEC)
 	parameter.checkEnabledScript = {
@@ -463,7 +498,7 @@ local function configureOneWayParam(params, existing)
 	end
 end
 
-local function modify(fileName, constructionData, includeAdvancedAdjustments)
+local function modify(fileName, constructionData, advancedAdjustmentsEnabledByDefault)
 	if constructionData.edgeObject == nil or constructionData.edgeObject.snapToTrack ~= true then
 		return constructionData
 	end
@@ -496,18 +531,26 @@ local function modify(fileName, constructionData, includeAdvancedAdjustments)
 		appendNumericParam(signalParams, LONGITUDINAL_OFFSET_SPEC)
 	end
 
-	if includeAdvancedAdjustments then
-		if not core.hasParam(signalParams, core.HEIGHT_OFFSET_KEY) and not existing.hasNativeHeightOffset then
-			appendNumericParam(signalParams, HEIGHT_OFFSET_SPEC)
+	local addHeightOffset = not core.hasParam(signalParams, core.HEIGHT_OFFSET_KEY)
+		and not existing.hasNativeHeightOffset
+	local addYawOffset = not core.hasParam(signalParams, core.YAW_OFFSET_KEY) and not existing.hasNativeYawOffset
+	local addPitchOffset = not core.hasParam(signalParams, core.PITCH_OFFSET_KEY) and not existing.hasNativePitchOffset
+	local addRollOffset = not core.hasParam(signalParams, core.ROLL_OFFSET_KEY) and not existing.hasNativeRollOffset
+	if addHeightOffset or addYawOffset or addPitchOffset or addRollOffset then
+		if not core.hasParam(signalParams, core.ADVANCED_ADJUSTMENTS_PARAM_KEY) then
+			appendAdvancedAdjustmentsParam(signalParams, advancedAdjustmentsEnabledByDefault)
 		end
-		if not core.hasParam(signalParams, core.YAW_OFFSET_KEY) and not existing.hasNativeYawOffset then
-			appendNumericParam(signalParams, YAW_OFFSET_SPEC)
+		if addHeightOffset then
+			appendAdvancedNumericParam(signalParams, HEIGHT_OFFSET_SPEC)
 		end
-		if not core.hasParam(signalParams, core.PITCH_OFFSET_KEY) and not existing.hasNativePitchOffset then
-			appendNumericParam(signalParams, PITCH_OFFSET_SPEC)
+		if addYawOffset then
+			appendAdvancedNumericParam(signalParams, YAW_OFFSET_SPEC)
 		end
-		if not core.hasParam(signalParams, core.ROLL_OFFSET_KEY) and not existing.hasNativeRollOffset then
-			appendNumericParam(signalParams, ROLL_OFFSET_SPEC)
+		if addPitchOffset then
+			appendAdvancedNumericParam(signalParams, PITCH_OFFSET_SPEC)
+		end
+		if addRollOffset then
+			appendAdvancedNumericParam(signalParams, ROLL_OFFSET_SPEC)
 		end
 	end
 

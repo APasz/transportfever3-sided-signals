@@ -1,5 +1,7 @@
 local MOD_ID = "apasz_sided_signals"
 local ADVANCED_ADJUSTMENTS_PARAM_KEY = "apasz_sided_signals_advanced_adjustments"
+local ADVANCED_ADJUSTMENTS_OFF_INDEX = 1
+local ADVANCED_ADJUSTMENTS_ON_INDEX = 2
 local SIDE_KEY = "apasz_sided_signals_side"
 local SIDE_OFFSET_KEY = "apasz_sided_signals_side_offset"
 local OFFSET_KEY = "apasz_sided_signals_offset"
@@ -45,6 +47,15 @@ local function parameter(params, key)
 		end
 	end
 	return nil
+end
+
+local function assertAdvancedVisibility(parameterValue, message)
+	assertEqual(
+		parameterValue.checkEnabledScript.fileName,
+		"apasz_sided_signals::/sided_signals/params.gui@advancedAdjustmentsVisible",
+		message .. " visibility callback"
+	)
+	assertNil(next(parameterValue.checkEnabledScript.params), message .. " visibility has no competing default")
 end
 
 local function identityTransform(y, scaleY)
@@ -243,7 +254,7 @@ dofile("content/mod.script.lua")
 local mod = data()
 mod.runFn({}, {}, {
 	[MOD_ID] = {
-		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = 2,
+		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_ON_INDEX,
 	},
 }, {})
 
@@ -267,7 +278,7 @@ local vanilla = {
 }
 modifyConstruction("infrastructure/signal/signal_path_a.con", vanilla)
 
-assertEqual(#vanilla.params, 10, "vanilla parameters added once")
+assertEqual(#vanilla.params, 11, "vanilla parameters added once")
 assertEqual(parameter(vanilla.params, SIDE_KEY).defaultIndex, 1, "original side is the default")
 local sideOffset = parameter(vanilla.params, SIDE_OFFSET_KEY)
 assertEqual(sideOffset.defaultIndex, 11, "zero lateral offset is the default")
@@ -298,6 +309,14 @@ assertEqual(
 	"apasz_sided_signals::/sided_signals/params.gui@formatMetres",
 	"track offset value formatter"
 )
+local advancedAdjustments = parameter(vanilla.params, ADVANCED_ADJUSTMENTS_PARAM_KEY)
+assertEqual(
+	advancedAdjustments.defaultIndex,
+	ADVANCED_ADJUSTMENTS_ON_INDEX,
+	"global setting enables advanced controls by default"
+)
+assertEqual(advancedAdjustments.uiType, "CheckBox", "advanced visibility uses a checkbox")
+assertEqual(advancedAdjustments.postConstructionModifiable, true, "advanced visibility can be edited later")
 local heightOffset = parameter(vanilla.params, HEIGHT_OFFSET_KEY)
 assertEqual(heightOffset.defaultIndex, 31, "zero height offset is the default")
 assertEqual(#heightOffset.numbers, 61, "height offset has every quarter-metre step")
@@ -313,7 +332,7 @@ assertEqual(
 	"apasz_sided_signals::/sided_signals/params.gui@formatMetres",
 	"height value formatter"
 )
-assertNil(heightOffset.checkEnabledScript, "height is available without a per-signal toggle")
+assertAdvancedVisibility(heightOffset, "height")
 local yawOffset = parameter(vanilla.params, YAW_OFFSET_KEY)
 assertEqual(yawOffset.defaultIndex, 31, "zero yaw is the default")
 assertEqual(#yawOffset.numbers, 61, "yaw has every one-degree step")
@@ -329,7 +348,7 @@ assertEqual(
 	"apasz_sided_signals::/sided_signals/params.gui@formatDegrees",
 	"yaw value formatter"
 )
-assertNil(yawOffset.checkEnabledScript, "yaw is available without a per-signal toggle")
+assertAdvancedVisibility(yawOffset, "yaw")
 local pitchOffset = parameter(vanilla.params, PITCH_OFFSET_KEY)
 assertEqual(pitchOffset.defaultIndex, 16, "zero pitch is the default")
 assertEqual(#pitchOffset.numbers, 31, "pitch has every one-degree step")
@@ -344,7 +363,7 @@ assertEqual(
 	"apasz_sided_signals::/sided_signals/params.gui@formatDegrees",
 	"pitch value formatter"
 )
-assertNil(pitchOffset.checkEnabledScript, "pitch is available without a per-signal toggle")
+assertAdvancedVisibility(pitchOffset, "pitch")
 local rollOffset = parameter(vanilla.params, ROLL_OFFSET_KEY)
 assertEqual(rollOffset.defaultIndex, 16, "zero roll is the default")
 assertEqual(#rollOffset.numbers, 31, "roll has every one-degree step")
@@ -359,7 +378,7 @@ assertEqual(
 	"apasz_sided_signals::/sided_signals/params.gui@formatDegrees",
 	"roll value formatter"
 )
-assertNil(rollOffset.checkEnabledScript, "roll is available without a per-signal toggle")
+assertAdvancedVisibility(rollOffset, "roll")
 assertEqual(parameter(vanilla.params, MODE_KEY).defaultIndex, 1, "original function is the default")
 local whistle = parameter(vanilla.params, WHISTLE_KEY)
 assertEqual(whistle.defaultIndex, WHISTLE_ORIGINAL_INDEX, "original whistle behaviour is the default")
@@ -369,33 +388,38 @@ assertEqual(vanillaOneWay.postConstructionModifiable, true, "vanilla one-way can
 assertEqual(vanillaOneWay.checkEnabledScript.params.originalIsSignal, true, "vanilla defaults to a signal")
 
 modifyConstruction("infrastructure/signal/signal_path_a.con", vanilla)
-assertEqual(#vanilla.params, 10, "construction modifier is idempotent")
+assertEqual(#vanilla.params, 11, "construction modifier is idempotent")
 
 mod.runFn({}, {}, {
 	[MOD_ID] = {
-		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = 1,
+		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_OFF_INDEX,
 	},
 }, {})
-local modifyConstructionWithoutAdvanced = modifiers.loadConstruction
-local modifyScriptWithoutAdvanced = modifiers.loadScript
+local modifyConstructionWithAdvancedHidden = modifiers.loadConstruction
+local modifyScriptWithAdvancedHidden = modifiers.loadScript
 local basicSignal = {
 	edgeObject = { snapToTrack = true },
 	menuCategory = { categories = { { category = "rail_signals" } } },
 	params = {},
 }
-modifyConstructionWithoutAdvanced("infrastructure/signal/basic.con", basicSignal)
-assertEqual(#basicSignal.params, 6, "disabled advanced adjustments add only the core controls")
-assertEqual(parameter(basicSignal.params, SIDE_KEY) ~= nil, true, "disabled advanced settings retain side")
-assertEqual(parameter(basicSignal.params, OFFSET_KEY) ~= nil, true, "disabled advanced settings retain track offset")
-assertEqual(parameter(basicSignal.params, MODE_KEY) ~= nil, true, "disabled advanced settings retain function")
-assertEqual(parameter(basicSignal.params, WHISTLE_KEY) ~= nil, true, "disabled advanced settings retain whistle")
+modifyConstructionWithAdvancedHidden("infrastructure/signal/basic.con", basicSignal)
+assertEqual(#basicSignal.params, 11, "hidden advanced adjustments remain available to the menu")
+assertEqual(parameter(basicSignal.params, SIDE_KEY) ~= nil, true, "hidden advanced settings retain side")
+assertEqual(parameter(basicSignal.params, OFFSET_KEY) ~= nil, true, "hidden advanced settings retain track offset")
+assertEqual(parameter(basicSignal.params, MODE_KEY) ~= nil, true, "hidden advanced settings retain function")
+assertEqual(parameter(basicSignal.params, WHISTLE_KEY) ~= nil, true, "hidden advanced settings retain whistle")
+assertEqual(
+	parameter(basicSignal.params, ADVANCED_ADJUSTMENTS_PARAM_KEY).defaultIndex,
+	ADVANCED_ADJUSTMENTS_OFF_INDEX,
+	"global setting hides advanced controls by default"
+)
 local basicSideOffset = parameter(basicSignal.params, SIDE_OFFSET_KEY)
 assertEqual(basicSideOffset.values == sideOffset.values, false, "cached labels remain construction-local")
 assertEqual(basicSideOffset.numbers == sideOffset.numbers, false, "cached numbers remain construction-local")
-assertNil(parameter(basicSignal.params, HEIGHT_OFFSET_KEY), "disabled advanced settings omit height")
-assertNil(parameter(basicSignal.params, YAW_OFFSET_KEY), "disabled advanced settings omit yaw")
-assertNil(parameter(basicSignal.params, PITCH_OFFSET_KEY), "disabled advanced settings omit pitch")
-assertNil(parameter(basicSignal.params, ROLL_OFFSET_KEY), "disabled advanced settings omit roll")
+assertAdvancedVisibility(parameter(basicSignal.params, HEIGHT_OFFSET_KEY), "hidden height")
+assertAdvancedVisibility(parameter(basicSignal.params, YAW_OFFSET_KEY), "hidden yaw")
+assertAdvancedVisibility(parameter(basicSignal.params, PITCH_OFFSET_KEY), "hidden pitch")
+assertAdvancedVisibility(parameter(basicSignal.params, ROLL_OFFSET_KEY), "hidden roll")
 
 local ignoredConstruction = {
 	edgeObject = { snapToTrack = true },
@@ -502,6 +526,10 @@ assertNil(parameter(fullyParameterized.params, YAW_OFFSET_KEY), "native yaw is n
 assertNil(parameter(fullyParameterized.params, PITCH_OFFSET_KEY), "native pitch is not duplicated")
 assertNil(parameter(fullyParameterized.params, ROLL_OFFSET_KEY), "native roll is not duplicated")
 assertNil(parameter(fullyParameterized.params, WHISTLE_KEY), "native whistle is not duplicated")
+assertNil(
+	parameter(fullyParameterized.params, ADVANCED_ADJUSTMENTS_PARAM_KEY),
+	"advanced visibility is omitted when every advanced control is native"
+)
 
 for _, nativeWhistleKey in ipairs({ "signal_whistle", "signal_horn", "signal_sound_event" }) do
 	local nativeWhistleControl = {
@@ -666,8 +694,10 @@ local authorOverrideScript =
 local ignoredScript = modifyScript("ignored.script", makeSignalScript("external_signal_pack::/models/ignored.mdl", 0))
 local reversedTransformScript =
 	modifyScript("reversed_transform.script", makeSignalScript("::/infrastructure/signal/vanilla.mdl", 0, nil, -1))
-local advancedDisabledScript =
-	modifyScriptWithoutAdvanced("advanced_disabled.script", makeSignalScript("::/infrastructure/signal/vanilla.mdl", 0))
+local advancedHiddenByDefaultScript = modifyScriptWithAdvancedHidden(
+	"advanced_hidden_by_default.script",
+	makeSignalScript("::/infrastructure/signal/vanilla.mdl", 0)
+)
 local normalizedIdScript =
 	modifyScript("normalized_id.script", makeSignalScript("::\\INFRASTRUCTURE\\SIGNAL\\VANILLA.MDL", 0))
 local authoredWhistleScript = modifyScript(
@@ -779,15 +809,37 @@ assertEqual(modelGetCount, 7, "post-run reads each relevant model once")
 -- Match the restricted construction runtime proven by the game log.
 _G.api.res = nil
 
-local advancedDisabled = advancedDisabledScript.updateFn(vanillaCapture, {
+local legacyAdvancedDisabled = advancedHiddenByDefaultScript.updateFn(vanillaCapture, {
 	[SIDE_KEY] = 2,
 	[SIDE_OFFSET_KEY] = 0,
 	[HEIGHT_OFFSET_KEY] = 1,
 	[YAW_OFFSET_KEY] = 30,
 })
-assertNear(advancedDisabled.edgeModels[1].model.transf[14], 6, "core adjustments remain active")
-assertNear(advancedDisabled.edgeModels[1].model.transf[15], 0, "disabled height is not applied")
-assertNear(advancedDisabled.edgeModels[1].model.transf[1], 1, "disabled orientation is not applied")
+assertNear(legacyAdvancedDisabled.edgeModels[1].model.transf[14], 6, "core adjustments remain active")
+assertNear(legacyAdvancedDisabled.edgeModels[1].model.transf[15], 0, "legacy global Off disables height")
+assertNear(legacyAdvancedDisabled.edgeModels[1].model.transf[1], 1, "legacy global Off disables orientation")
+
+local locallyEnabledAdvanced = advancedHiddenByDefaultScript.updateFn(vanillaCapture, {
+	[ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_ON_INDEX,
+	[SIDE_OFFSET_KEY] = 0,
+	[HEIGHT_OFFSET_KEY] = 1,
+	[YAW_OFFSET_KEY] = 30,
+})
+assertNear(locallyEnabledAdvanced.edgeModels[1].model.transf[15], 1, "local toggle enables height")
+assertNear(
+	locallyEnabledAdvanced.edgeModels[1].model.transf[1],
+	math.cos(math.rad(30)),
+	"local toggle enables orientation"
+)
+
+local locallyDisabledAdvanced = vanillaScript.updateFn(vanillaCapture, {
+	[ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_OFF_INDEX,
+	[SIDE_OFFSET_KEY] = 0,
+	[HEIGHT_OFFSET_KEY] = 1,
+	[YAW_OFFSET_KEY] = 30,
+})
+assertNear(locallyDisabledAdvanced.edgeModels[1].model.transf[15], 0, "local toggle disables height")
+assertNear(locallyDisabledAdvanced.edgeModels[1].model.transf[1], 1, "local toggle disables orientation")
 
 local defaultCaptureReads = 0
 local defaultCapture = setmetatable({}, {
@@ -1286,6 +1338,21 @@ assertEqual(checks.formatMetres({}, -7), "-7 m", "signed distance formatting")
 assertEqual(checks.formatMetres({}, 0.25), "0.25 m", "fractional distance formatting")
 assertEqual(checks.formatDegrees({}, 0), "0°", "zero-angle formatting")
 assertEqual(checks.formatDegrees({}, -12), "-12°", "signed-angle formatting")
+assertEqual(
+	checks.advancedAdjustmentsVisible({}, {}),
+	"InputActionOnly",
+	"missing session toggle keeps advanced controls hidden"
+)
+assertEqual(
+	checks.advancedAdjustmentsVisible({}, { [ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_ON_INDEX }),
+	"Enabled",
+	"session toggle shows advanced controls"
+)
+assertEqual(
+	checks.advancedAdjustmentsVisible({}, { [ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_OFF_INDEX }),
+	"InputActionOnly",
+	"session toggle omits advanced controls without dropping their values"
+)
 local sideCapture = {
 	sideKey = SIDE_KEY,
 	originalSideIndex = 1,
