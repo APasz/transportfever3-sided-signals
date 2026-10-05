@@ -8,7 +8,7 @@
         {
             "defaultIndex": 1,
             "key": "apasz_sided_signals_advanced_adjustments",
-            "name": "APASZ_SIDED_SIGNALS_ADVANCED",
+            "name": "APASZ_SIDED_SIGNALS_ADVANCED_DEFAULT",
             "tooltip": "APASZ_SIDED_SIGNALS_ADVANCED_TOOLTIP",
             "uiType": "CheckBox",
             "values": [

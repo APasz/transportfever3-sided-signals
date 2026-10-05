@@ -9,6 +9,7 @@ from typing import Final
 ROOT: Final[Path] = Path(__file__).resolve().parents[1]
 MOD_ID: Final[str] = "apasz_sided_signals"
 ADVANCED_PARAM_KEY: Final[str] = "apasz_sided_signals_advanced_adjustments"
+ADVANCED_DEFAULT_NAME_KEY: Final[str] = "APASZ_SIDED_SIGNALS_ADVANCED_DEFAULT"
 SUPPORTED_LOCALES: Final[tuple[str, ...]] = (
     "en",
     "de",
@@ -153,6 +154,8 @@ def validate_manifest() -> None:
     advanced = params[0]
     if not isinstance(advanced, dict) or advanced.get("key") != ADVANCED_PARAM_KEY:
         raise AssertionError("mod.json:params must declare the advanced setting")
+    if advanced.get("name") != ADVANCED_DEFAULT_NAME_KEY:
+        raise AssertionError("the advanced setting must use its default-visibility name")
     if advanced.get("uiType") != "CheckBox":
         raise AssertionError("the advanced setting must use a checkbox")
     default_index = advanced.get("defaultIndex")
@@ -166,8 +169,10 @@ def validate_manifest() -> None:
 
     for field in ("known_signal_mods", "known_broken_mods"):
         entries = manifest.get(field)
-        if not isinstance(entries, list) or not entries:
-            raise AssertionError(f"mod.json:{field} must be a non-empty list")
+        if not isinstance(entries, list):
+            raise AssertionError(f"mod.json:{field} must be a list")
+        if field == "known_signal_mods" and not entries:
+            raise AssertionError("mod.json:known_signal_mods must be non-empty")
         for entry in entries:
             if not isinstance(entry, str) or KNOWN_MOD_ENTRY.fullmatch(entry) is None:
                 raise AssertionError(

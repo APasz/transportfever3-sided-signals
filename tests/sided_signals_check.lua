@@ -317,6 +317,7 @@ assertEqual(
 	"global setting enables advanced controls by default"
 )
 assertEqual(advancedAdjustments.uiType, "CheckBox", "advanced visibility uses a checkbox")
+assertEqual(advancedAdjustments.name, "APASZ_SIDED_SIGNALS_ADVANCED", "toolbar toggle uses its own name")
 assertEqual(advancedAdjustments.postConstructionModifiable, true, "advanced visibility can be edited later")
 local heightOffset = parameter(vanilla.params, HEIGHT_OFFSET_KEY)
 assertEqual(heightOffset.defaultIndex, 31, "zero height offset is the default")
@@ -387,6 +388,21 @@ assertEqual(#whistle.values, 3, "whistle supports default, off, and on")
 assertEqual(whistle.postConstructionModifiable, true, "whistle can be edited later")
 assertEqual(vanillaOneWay.postConstructionModifiable, true, "vanilla one-way can be edited later")
 assertEqual(vanillaOneWay.checkEnabledScript.params.originalIsSignal, true, "vanilla defaults to a signal")
+
+for _, key in ipairs({
+	SIDE_OFFSET_KEY,
+	OFFSET_KEY,
+	HEIGHT_OFFSET_KEY,
+	YAW_OFFSET_KEY,
+	PITCH_OFFSET_KEY,
+	ROLL_OFFSET_KEY,
+	ADVANCED_ADJUSTMENTS_PARAM_KEY,
+}) do
+	assertEqual(parameter(vanilla.params, key).location, "Toolbar", key .. " appears in the placement toolbar")
+end
+for _, key in ipairs({ SIDE_KEY, MODE_KEY, WHISTLE_KEY, "oneWay" }) do
+	assertNil(parameter(vanilla.params, key).location, key .. " remains in the construction menu")
+end
 
 modifyConstruction("infrastructure/signal/signal_path_a.con", vanilla)
 assertEqual(#vanilla.params, 11, "construction modifier is idempotent")
