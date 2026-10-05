@@ -90,7 +90,7 @@ local LONGITUDINAL_OFFSET_SPEC: NumericParamSpec = {
     nameKey = "APASZ_SIDED_SIGNALS_OFFSET",
     tooltipKey = "APASZ_SIDED_SIGNALS_OFFSET_TOOLTIP",
     minimum = -20,
-    maximum = 20,
+    maximum = 50,
     step = 1,
     formatter = METRES_FORMATTER,
 }

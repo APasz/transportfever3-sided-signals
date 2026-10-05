@@ -4,7 +4,7 @@ Adds reusable construction parameters to Transport Fever 3 railway signals:
 
 - default, left, or right model placement;
 - −5–20 m of signed lateral offset in 0.5 m steps;
-- −20–20 m of signed track offset;
+- −20–50 m of signed track offset;
 - optional advanced adjustments, shown with an in-game construction toggle;
 - −7.5–7.5 m of vertical adjustment in 0.25 m steps when enabled;
 - −30–30° of yaw adjustment in 1° steps when enabled;

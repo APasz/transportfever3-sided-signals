@@ -36,6 +36,9 @@ SUPPORTED_LOCALES: Final[tuple[str, ...]] = (
 LOCALIZATION_KEY: Final[re.Pattern[str]] = re.compile(
     r'"(APASZ_SIDED_SIGNALS_[A-Z_]+)"'
 )
+KNOWN_MOD_ENTRY: Final[re.Pattern[str]] = re.compile(
+    r"^[1-9][0-9]* \| [A-Za-z0-9_]+$"
+)
 METADATA_FIELDS: Final[frozenset[str]] = frozenset({"name", "summary", "description"})
 
 
@@ -160,6 +163,16 @@ def validate_manifest() -> None:
         "APASZ_SIDED_SIGNALS_ON",
     ]:
         raise AssertionError("the advanced setting must contain Off and On")
+
+    for field in ("known_signal_mods", "known_broken_mods"):
+        entries = manifest.get(field)
+        if not isinstance(entries, list) or not entries:
+            raise AssertionError(f"mod.json:{field} must be a non-empty list")
+        for entry in entries:
+            if not isinstance(entry, str) or KNOWN_MOD_ENTRY.fullmatch(entry) is None:
+                raise AssertionError(
+                    f"mod.json:{field} entry must be '<mod.io ID> | <modId>': {entry!r}"
+                )
 
 
 def validate_metadata() -> None:

@@ -30,15 +30,15 @@
     "severityAdd": "None",
     "severityRemove": "Warning",
     "known_signal_mods": [
-        "6418599",
-        "6413987",
-        "6378133",
-        "6421374",
-        "6424471",
-        "6427332",
-        "6427290"
+        "6418599 | joao_sinais_pt",
+        "6413987 | mw_bue_signale",
+        "6378133 | yomiti1225_railway_signal",
+        "6421374 | chruutvoluzi_ch_n_signalsystem_v1_0",
+        "6424471 | Polskie_semafory",
+        "6427332 | xenao_signal_fr",
+        "6427290 | flynn_nl_rail_signals_1"
     ],
     "known_broken_mods": [
-        "6424703"
+        "6424703 | killakanz_uk_sem_signal"
     ]
 }

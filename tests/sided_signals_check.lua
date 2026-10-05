@@ -301,7 +301,8 @@ local offset = parameter(vanilla.params, OFFSET_KEY)
 assertEqual(offset.defaultIndex, 21, "zero track offset is the default")
 assertEqual(offset.numbers[1], -20, "signed offset minimum")
 assertEqual(offset.numbers[21], 0, "signed offset zero")
-assertEqual(offset.numbers[41], 20, "signed offset maximum")
+assertEqual(#offset.numbers, 71, "track offset has every metre step")
+assertEqual(offset.numbers[71], 50, "signed offset maximum")
 assertEqual(offset.values[21], "0 m", "track offset includes units")
 assertEqual(offset.displayMode, "Vertical", "track offset measurement has room to display")
 assertEqual(
@@ -480,7 +481,7 @@ assertEqual(
 )
 
 local nativeSideConstructions = {}
-for _, nativeSideKey in ipairs({ "joao_sa_lado", "n_seite", "pozycja" }) do
+for _, nativeSideKey in ipairs({ "joao_sa_lado", "n_seite", "pozycja", "nl_side" }) do
 	local nativeSideConstruction = {
 		edgeObject = { snapToTrack = true },
 		menuCategory = { categories = { { category = "rail_signals" } } },
@@ -498,6 +499,23 @@ for _, nativeSideKey in ipairs({ "joao_sa_lado", "n_seite", "pozycja" }) do
 	nativeSideConstructions[nativeSideKey] = nativeSideConstruction
 end
 local portugueseNativeSide = nativeSideConstructions.joao_sa_lado
+
+local frenchControls = {
+	edgeObject = { snapToTrack = true },
+	menuCategory = { categories = { { category = "rail_signals" } } },
+	params = {
+		{ key = "xenao_fr_v9_distance" },
+		{ key = "xenao_fr_v9_oneway" },
+	},
+}
+modifyConstruction("infrastructure/signals/fr/signal_configurable_v9.con", frenchControls)
+assertEqual(parameter(frenchControls.params, SIDE_KEY).defaultIndex, 1, "French signals receive a side selector")
+assertEqual(
+	parameter(frenchControls.params, OFFSET_KEY).numbers[21],
+	0,
+	"French lateral distance does not suppress track offset"
+)
+assertNil(parameter(frenchControls.params, "oneWay"), "French semantic one-way control is not duplicated")
 
 local fullyParameterized = {
 	edgeObject = { snapToTrack = true },
