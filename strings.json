@@ -6,7 +6,7 @@
         "APASZ_SIDED_SIGNALS_SIDE_OFFSET_TOOLTIP": "Moves the model inward or outward from the selected side of the track without moving the logical signal.",
         "APASZ_SIDED_SIGNALS_OFFSET": "Track offset",
         "APASZ_SIDED_SIGNALS_OFFSET_TOOLTIP": "Moves the model forward or backward along the track without moving the logical signal.",
-        "APASZ_SIDED_SIGNALS_ADVANCED": "Advanced adjustments",
+        "APASZ_SIDED_SIGNALS_ADVANCED": "Default show advanced adjustments",
         "APASZ_SIDED_SIGNALS_ADVANCED_TOOLTIP": "Adds height, yaw, pitch, and roll controls to compatible signals.",
         "APASZ_SIDED_SIGNALS_HEIGHT_OFFSET": "Height offset",
         "APASZ_SIDED_SIGNALS_HEIGHT_OFFSET_TOOLTIP": "Moves the model vertically without moving the logical signal.",
