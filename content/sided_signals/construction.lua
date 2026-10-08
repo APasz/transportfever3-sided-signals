@@ -280,11 +280,22 @@ local function hasMenuCategory(constructionData, category)
 	return false
 end
 
-local function isRailSignal(fileName, constructionData, existing)
+local function hasSignalOrWaypointPath(fileName)
+	local normalizedFileName = "/" .. core.normalizeResourceName(fileName)
+	return core.hasMarker(normalizedFileName, "/signal/")
+		or core.hasMarker(normalizedFileName, "/signals/")
+		or core.hasMarker(normalizedFileName, "/waypoint/")
+		or core.hasMarker(normalizedFileName, "/waypoints/")
+end
+
+local function isSupportedRailEdgeObject(fileName, constructionData, existing)
 	if hasMenuCategory(constructionData, "rail_signals") then
 		return true
 	end
 	if existing.standardOneWay ~= nil or existing.hasNativeMode then
+		return true
+	end
+	if hasSignalOrWaypointPath(fileName) then
 		return true
 	end
 
@@ -510,7 +521,7 @@ local function modify(fileName, constructionData, advancedAdjustmentsEnabledByDe
 	if params ~= nil then
 		existing = inspectParams(params)
 	end
-	if not isRailSignal(fileName, constructionData, existing) then
+	if not isSupportedRailEdgeObject(fileName, constructionData, existing) then
 		return constructionData
 	end
 	if metadata.read(constructionData.metadata, fileName).ignore then

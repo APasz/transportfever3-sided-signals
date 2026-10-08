@@ -23,7 +23,7 @@
     "preRunScript": {
         "fileName": ""
     },
-    "revision": 4,
+    "revision": 5,
     "runScript": {
         "fileName": "apasz_sided_signals::/mod.script@runFn"
     },
@@ -37,7 +37,11 @@
         "6424471 | Polskie_semafory",
         "6427332 | xenao_signal_fr",
         "6427290 | flynn_nl_rail_signals_1",
-        "6424703 | killakanz_uk_sem_signal"
+        "6424703 | killakanz_uk_sem_signal",
+        "6430801 | badger_signalpack",
+        "6432291 | railstorm_oebb_signale",
+        "6429730 | krisz04_mav_fenyjelzo_tf3_1",
+        "6430416 | chruutvoluzi_etcs"
     ],
     "known_broken_mods": [
     ]

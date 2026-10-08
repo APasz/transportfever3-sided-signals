@@ -163,9 +163,12 @@ _G._ = function(value)
 end
 
 local warnings = {}
-_G.debugPrint = function(message)
-	warnings[#warnings + 1] = message
-end
+_G.log = {
+	verbose = function() end,
+	warning = function(message)
+		warnings[#warnings + 1] = message
+	end,
+}
 
 local function hasWarning(fragment)
 	for _, warning in ipairs(warnings) do
@@ -648,6 +651,33 @@ local genericRotationControl = {
 }
 modifyConstruction("infrastructure/signal/rotation.con", genericRotationControl)
 assertNil(parameter(genericRotationControl.params, YAW_OFFSET_KEY), "generic native rotation is treated as yaw")
+
+local customCategoryWaypoint = {
+	edgeObject = { snapToTrack = true },
+	menuCategory = { categories = { { category = "oebb_vs_gruppe" } } },
+	params = {},
+}
+modifyConstruction(
+	"railstorm_oebb_signale::\\tf2\\models\\waypoint\\zustimmung.con",
+	customCategoryWaypoint
+)
+assertEqual(
+	parameter(customCategoryWaypoint.params, MODE_KEY).defaultIndex,
+	1,
+	"waypoint resource paths support custom menu categories"
+)
+
+local uncategorizedSignal = {
+	edgeObject = { snapToTrack = true },
+	menuCategory = { categories = {} },
+	params = {},
+}
+modifyConstruction("railstorm_oebb_signale::/signals/vorsignal.con", uncategorizedSignal)
+assertEqual(
+	parameter(uncategorizedSignal.params, SIDE_KEY).defaultIndex,
+	1,
+	"signal resource paths support empty menu categories"
+)
 
 local airportSignal = {
 	edgeObject = { snapToTrack = true },
