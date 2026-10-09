@@ -15,6 +15,17 @@
                 "APASZ_SIDED_SIGNALS_OFF",
                 "APASZ_SIDED_SIGNALS_ON"
             ]
+        },
+        {
+            "defaultIndex": 0,
+            "key": "apasz_sided_signals_force_controls",
+            "name": "APASZ_SIDED_SIGNALS_FORCE_CONTROLS",
+            "tooltip": "APASZ_SIDED_SIGNALS_FORCE_CONTROLS_TOOLTIP",
+            "uiType": "CheckBox",
+            "values": [
+                "APASZ_SIDED_SIGNALS_OFF",
+                "APASZ_SIDED_SIGNALS_ON"
+            ]
         }
     ],
     "postRunScript": {
@@ -23,7 +34,7 @@
     "preRunScript": {
         "fileName": ""
     },
-    "revision": 5,
+    "revision": 6,
     "runScript": {
         "fileName": "apasz_sided_signals::/mod.script@runFn"
     },
@@ -41,7 +52,8 @@
         "6430801 | badger_signalpack",
         "6432291 | railstorm_oebb_signale",
         "6429730 | krisz04_mav_fenyjelzo_tf3_1",
-        "6430416 | chruutvoluzi_etcs"
+        "6430416 | chruutvoluzi_etcs",
+        "6435144 | ra_fs_signals"
     ],
     "known_broken_mods": [
     ]

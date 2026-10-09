@@ -295,7 +295,7 @@ local function advancedAdjustmentsEnabled(params, enabledByDefault)
 	if selectedAdvancedIndex == nil then
 		return enabledByDefault
 	end
-	return selectedAdvancedIndex == core.ADVANCED_ADJUSTMENTS_ON_INDEX
+	return selectedAdvancedIndex == core.TOGGLE_ON_INDEX
 end
 
 local function applyLongitudinalOffset(result, params)

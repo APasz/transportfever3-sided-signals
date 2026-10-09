@@ -15,15 +15,17 @@ local type ModParams = {string: number}
 local type AllModParams = {string: ModParams}
 local type ConfigDict = {string: string}
 
-local function advancedAdjustmentsEnabled(allModParams: AllModParams | nil): boolean
+local function modOptionEnabled(
+    allModParams: AllModParams | nil,
+    optionKey: string
+): boolean
     if allModParams == nil then
         return false
     end
     local paramsByMod = allModParams as AllModParams
     local modParams = paramsByMod[getCurrentModId()]
     return modParams ~= nil
-        and modParams[core.ADVANCED_ADJUSTMENTS_PARAM_KEY]
-            == core.ADVANCED_ADJUSTMENTS_ON_INDEX
+        and modParams[optionKey] == core.TOGGLE_ON_INDEX
 end
 
 function data(): any
@@ -34,8 +36,13 @@ function data(): any
             allModParams: AllModParams | nil,
             _baseConfig: BaseConfig | nil
         )
-            local advancedAdjustmentsEnabledByDefault = advancedAdjustmentsEnabled(
-                allModParams
+            local advancedAdjustmentsEnabledByDefault = modOptionEnabled(
+                allModParams,
+                core.ADVANCED_ADJUSTMENTS_PARAM_KEY
+            )
+            local showControlsForAllTrackEdgeObjects = modOptionEnabled(
+                allModParams,
+                core.FORCE_CONTROLS_PARAM_KEY
             )
             addModifier("loadConstruction", function(
                 fileName: string,
@@ -44,7 +51,8 @@ function data(): any
                 return construction.modify(
                     fileName,
                     constructionData,
-                    advancedAdjustmentsEnabledByDefault
+                    advancedAdjustmentsEnabledByDefault,
+                    showControlsForAllTrackEdgeObjects
                 )
             end)
             addModifier("loadScript", function(

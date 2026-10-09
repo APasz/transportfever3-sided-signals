@@ -43,8 +43,9 @@ end
 
 local M: SidedSignals.Core = {
     ADVANCED_ADJUSTMENTS_PARAM_KEY = "apasz_sided_signals_advanced_adjustments",
-    ADVANCED_ADJUSTMENTS_OFF_INDEX = 1,
-    ADVANCED_ADJUSTMENTS_ON_INDEX = 2,
+    FORCE_CONTROLS_PARAM_KEY = "apasz_sided_signals_force_controls",
+    TOGGLE_OFF_INDEX = 1,
+    TOGGLE_ON_INDEX = 2,
     SIDE_KEY = "apasz_sided_signals_side",
     SIDE_OFFSET_KEY = "apasz_sided_signals_side_offset",
     LONGITUDINAL_OFFSET_KEY = "apasz_sided_signals_offset",

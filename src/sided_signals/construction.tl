@@ -235,6 +235,21 @@ local function isWhistleKey(normalizedKey: string): boolean
         or core.hasMarker(normalizedKey, "soundevent")
 end
 
+local function isLongitudinalOffsetKey(
+    normalizedKey: string,
+    isHeightOffset: boolean,
+    isLateralAdjustment: boolean,
+    isAngularAdjustment: boolean
+): boolean
+    if core.hasMarker(normalizedKey, "longitudinal") then
+        return true
+    end
+    return core.hasMarker(normalizedKey, "offset")
+        and not isHeightOffset
+        and not isLateralAdjustment
+        and not isAngularAdjustment
+end
+
 local function inspectParams(params: {api.type.ScriptParam}): ExistingParams
     local result = emptyExistingParams()
 
@@ -284,10 +299,12 @@ local function inspectParams(params: {api.type.ScriptParam}): ExistingParams
                 and key ~= core.YAW_OFFSET_KEY
                 and key ~= core.PITCH_OFFSET_KEY
                 and key ~= core.ROLL_OFFSET_KEY
-                and core.hasMarker(normalized, "offset")
-                and not isHeightOffset
-                and not isLateralAdjustment
-                and not isAngularAdjustment
+                and isLongitudinalOffsetKey(
+                    normalized,
+                    isHeightOffset,
+                    isLateralAdjustment,
+                    isAngularAdjustment
+                )
             then
                 result.hasNativeLongitudinalOffset = true
             end
@@ -434,8 +451,8 @@ end
 
 local function advancedAdjustmentsDefaultIndex(defaultEnabled: boolean): integer
     return defaultEnabled
-        and core.ADVANCED_ADJUSTMENTS_ON_INDEX
-        or core.ADVANCED_ADJUSTMENTS_OFF_INDEX
+        and core.TOGGLE_ON_INDEX
+        or core.TOGGLE_OFF_INDEX
 end
 
 local function advancedAdjustmentsVisibilityCheck(): api.type.ScriptRef
@@ -583,7 +600,8 @@ end
 local function modify(
     fileName: string,
     constructionData: api.type.ConstructionDesc,
-    advancedAdjustmentsEnabledByDefault: boolean
+    advancedAdjustmentsEnabledByDefault: boolean,
+    showControlsForAllTrackEdgeObjects: boolean
 ): api.type.ConstructionDesc
     if constructionData.edgeObject == nil
         or constructionData.edgeObject.snapToTrack ~= true
@@ -596,7 +614,9 @@ local function modify(
     if params ~= nil then
         existing = inspectParams(params as {api.type.ScriptParam})
     end
-    if not isSupportedRailEdgeObject(fileName, constructionData, existing) then
+    if not showControlsForAllTrackEdgeObjects
+        and not isSupportedRailEdgeObject(fileName, constructionData, existing)
+    then
         return constructionData
     end
     if metadata.read(constructionData.metadata, fileName).ignore then

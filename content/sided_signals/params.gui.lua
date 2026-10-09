@@ -9,7 +9,7 @@ local function formatDegrees(_capturedParams, value)
 end
 
 local function advancedAdjustmentsVisible(_capturedParams, params)
-	if params[core.ADVANCED_ADJUSTMENTS_PARAM_KEY] == core.ADVANCED_ADJUSTMENTS_ON_INDEX then
+	if params[core.ADVANCED_ADJUSTMENTS_PARAM_KEY] == core.TOGGLE_ON_INDEX then
 		return "Enabled"
 	end
 

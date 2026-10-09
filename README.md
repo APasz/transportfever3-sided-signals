@@ -15,6 +15,8 @@ Adds reusable construction parameters to Transport Fever 3 railway signals:
 
 The default values preserve each signal's original appearance and behaviour. Geometric adjustments and the advanced-adjustments toggle added by Sided Signals appear in the placement toolbar; side, function, whistle, and one-way remain in the construction menu. Existing side, track offset, height offset, yaw, pitch, roll, waypoint, whistle, and one-way controls from other mods are retained rather than duplicated. Advanced adjustments are disabled by default. The mod setting controls their initial visibility when a game loads; the toolbar toggle can show or hide them for the current session.
 
+The compatibility-override mod setting is also disabled by default. When enabled, Sided Signals adds its controls to every track-snapped edge object, including third-party constructions whose category and resource path are not recognized. It does not include ordinary assets because they do not provide the signal and edge-model data needed by the controls.
+
 Whistle is independent of the selected function, so both signals and waypoints can trigger it. On uses the game's `horn` sound event, Off clears an authored sound event, and Default leaves the original value unchanged.
 
 The construction controls and mod-browser metadata are localised for all 22 supported locales. The English text is used as the game's fallback if a locale is unavailable.

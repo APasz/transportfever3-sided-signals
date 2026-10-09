@@ -1,7 +1,8 @@
 local MOD_ID = "apasz_sided_signals"
 local ADVANCED_ADJUSTMENTS_PARAM_KEY = "apasz_sided_signals_advanced_adjustments"
-local ADVANCED_ADJUSTMENTS_OFF_INDEX = 1
-local ADVANCED_ADJUSTMENTS_ON_INDEX = 2
+local FORCE_CONTROLS_PARAM_KEY = "apasz_sided_signals_force_controls"
+local TOGGLE_OFF_INDEX = 1
+local TOGGLE_ON_INDEX = 2
 local SIDE_KEY = "apasz_sided_signals_side"
 local SIDE_OFFSET_KEY = "apasz_sided_signals_side_offset"
 local OFFSET_KEY = "apasz_sided_signals_offset"
@@ -257,7 +258,7 @@ dofile("content/mod.script.lua")
 local mod = data()
 mod.runFn({}, {}, {
 	[MOD_ID] = {
-		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_ON_INDEX,
+		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = TOGGLE_ON_INDEX,
 	},
 }, {})
 
@@ -316,7 +317,7 @@ assertEqual(
 local advancedAdjustments = parameter(vanilla.params, ADVANCED_ADJUSTMENTS_PARAM_KEY)
 assertEqual(
 	advancedAdjustments.defaultIndex,
-	ADVANCED_ADJUSTMENTS_ON_INDEX,
+	TOGGLE_ON_INDEX,
 	"global setting enables advanced controls by default"
 )
 assertEqual(advancedAdjustments.uiType, "CheckBox", "advanced visibility uses a checkbox")
@@ -412,7 +413,7 @@ assertEqual(#vanilla.params, 11, "construction modifier is idempotent")
 
 mod.runFn({}, {}, {
 	[MOD_ID] = {
-		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_OFF_INDEX,
+		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = TOGGLE_OFF_INDEX,
 	},
 }, {})
 local modifyConstructionWithAdvancedHidden = modifiers.loadConstruction
@@ -430,7 +431,7 @@ assertEqual(parameter(basicSignal.params, MODE_KEY) ~= nil, true, "hidden advanc
 assertEqual(parameter(basicSignal.params, WHISTLE_KEY) ~= nil, true, "hidden advanced settings retain whistle")
 assertEqual(
 	parameter(basicSignal.params, ADVANCED_ADJUSTMENTS_PARAM_KEY).defaultIndex,
-	ADVANCED_ADJUSTMENTS_OFF_INDEX,
+	TOGGLE_OFF_INDEX,
 	"global setting hides advanced controls by default"
 )
 local basicSideOffset = parameter(basicSignal.params, SIDE_OFFSET_KEY)
@@ -655,7 +656,11 @@ assertNil(parameter(genericRotationControl.params, YAW_OFFSET_KEY), "generic nat
 local customCategoryWaypoint = {
 	edgeObject = { snapToTrack = true },
 	menuCategory = { categories = { { category = "oebb_vs_gruppe" } } },
-	params = {},
+	params = {
+		{ key = "tf2zustimmungHeight" },
+		{ key = "tf2zustimmungDistance" },
+		{ key = "tf2zustimmungLongitudinal" },
+	},
 }
 modifyConstruction(
 	"railstorm_oebb_signale::\\tf2\\models\\waypoint\\zustimmung.con",
@@ -665,6 +670,10 @@ assertEqual(
 	parameter(customCategoryWaypoint.params, MODE_KEY).defaultIndex,
 	1,
 	"waypoint resource paths support custom menu categories"
+)
+assertNil(
+	parameter(customCategoryWaypoint.params, OFFSET_KEY),
+	"native waypoint longitudinal adjustment is not duplicated"
 )
 
 local uncategorizedSignal = {
@@ -694,6 +703,35 @@ local unrelatedRailTool = {
 }
 modifyConstruction("infrastructure/track_marker.con", unrelatedRailTool)
 assertEqual(#unrelatedRailTool.params, 0, "unrelated rail edge objects are excluded")
+
+mod.runFn({}, {}, {
+	[MOD_ID] = {
+		[FORCE_CONTROLS_PARAM_KEY] = TOGGLE_ON_INDEX,
+	},
+}, {})
+local modifyAllTrackEdgeObjects = modifiers.loadConstruction
+local forcedRailTool = {
+	edgeObject = { snapToTrack = true },
+	menuCategory = { categories = { { category = "rail_tools" } } },
+	params = {},
+}
+modifyAllTrackEdgeObjects("infrastructure/track_marker.con", forcedRailTool)
+assertEqual(
+	parameter(forcedRailTool.params, SIDE_KEY).defaultIndex,
+	1,
+	"compatibility override includes unrecognized track edge objects"
+)
+
+local forcedOrdinaryAsset = {
+	menuCategory = { categories = { { category = "rail_assets" } } },
+	params = {},
+}
+modifyAllTrackEdgeObjects("assets/trackside_board.con", forcedOrdinaryAsset)
+assertEqual(
+	#forcedOrdinaryAsset.params,
+	0,
+	"compatibility override excludes constructions without track edge objects"
+)
 
 local parameterlessSignal = {
 	edgeObject = { snapToTrack = true },
@@ -884,7 +922,7 @@ assertNear(legacyAdvancedDisabled.edgeModels[1].model.transf[15], 0, "legacy glo
 assertNear(legacyAdvancedDisabled.edgeModels[1].model.transf[1], 1, "legacy global Off disables orientation")
 
 local locallyEnabledAdvanced = advancedHiddenByDefaultScript.updateFn(vanillaCapture, {
-	[ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_ON_INDEX,
+	[ADVANCED_ADJUSTMENTS_PARAM_KEY] = TOGGLE_ON_INDEX,
 	[SIDE_OFFSET_KEY] = 0,
 	[HEIGHT_OFFSET_KEY] = 1,
 	[YAW_OFFSET_KEY] = 30,
@@ -897,7 +935,7 @@ assertNear(
 )
 
 local locallyDisabledAdvanced = vanillaScript.updateFn(vanillaCapture, {
-	[ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_OFF_INDEX,
+	[ADVANCED_ADJUSTMENTS_PARAM_KEY] = TOGGLE_OFF_INDEX,
 	[SIDE_OFFSET_KEY] = 0,
 	[HEIGHT_OFFSET_KEY] = 1,
 	[YAW_OFFSET_KEY] = 30,
@@ -1408,12 +1446,12 @@ assertEqual(
 	"missing session toggle keeps advanced controls hidden"
 )
 assertEqual(
-	checks.advancedAdjustmentsVisible({}, { [ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_ON_INDEX }),
+	checks.advancedAdjustmentsVisible({}, { [ADVANCED_ADJUSTMENTS_PARAM_KEY] = TOGGLE_ON_INDEX }),
 	"Enabled",
 	"session toggle shows advanced controls"
 )
 assertEqual(
-	checks.advancedAdjustmentsVisible({}, { [ADVANCED_ADJUSTMENTS_PARAM_KEY] = ADVANCED_ADJUSTMENTS_OFF_INDEX }),
+	checks.advancedAdjustmentsVisible({}, { [ADVANCED_ADJUSTMENTS_PARAM_KEY] = TOGGLE_OFF_INDEX }),
 	"InputActionOnly",
 	"session toggle omits advanced controls without dropping their values"
 )

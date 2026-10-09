@@ -10,6 +10,12 @@ ROOT: Final[Path] = Path(__file__).resolve().parents[1]
 MOD_ID: Final[str] = "apasz_sided_signals"
 ADVANCED_PARAM_KEY: Final[str] = "apasz_sided_signals_advanced_adjustments"
 ADVANCED_DEFAULT_NAME_KEY: Final[str] = "APASZ_SIDED_SIGNALS_ADVANCED_DEFAULT"
+ADVANCED_TOOLTIP_KEY: Final[str] = "APASZ_SIDED_SIGNALS_ADVANCED_TOOLTIP"
+FORCE_CONTROLS_PARAM_KEY: Final[str] = "apasz_sided_signals_force_controls"
+FORCE_CONTROLS_NAME_KEY: Final[str] = "APASZ_SIDED_SIGNALS_FORCE_CONTROLS"
+FORCE_CONTROLS_TOOLTIP_KEY: Final[str] = (
+    "APASZ_SIDED_SIGNALS_FORCE_CONTROLS_TOOLTIP"
+)
 SUPPORTED_LOCALES: Final[tuple[str, ...]] = (
     "en",
     "de",
@@ -125,6 +131,28 @@ def script_reference(manifest: dict[str, object], field: str) -> str:
     return file_name
 
 
+def validate_checkbox_setting(
+    value: object,
+    key: str,
+    name_key: str,
+    tooltip_key: str,
+) -> None:
+    if not isinstance(value, dict) or value.get("key") != key:
+        raise AssertionError(f"mod.json:params must declare {key!r}")
+    if value.get("name") != name_key or value.get("tooltip") != tooltip_key:
+        raise AssertionError(f"mod.json:params:{key} must use its localization keys")
+    if value.get("uiType") != "CheckBox":
+        raise AssertionError(f"mod.json:params:{key} must use a checkbox")
+    default_index = value.get("defaultIndex")
+    if isinstance(default_index, bool) or default_index != 1:
+        raise AssertionError(f"mod.json:params:{key} must default to Off")
+    if value.get("values") != [
+        "APASZ_SIDED_SIGNALS_OFF",
+        "APASZ_SIDED_SIGNALS_ON",
+    ]:
+        raise AssertionError(f"mod.json:params:{key} must contain Off and On")
+
+
 def validate_manifest() -> None:
     manifest = load_object(ROOT / "mod.json")
     if manifest.get("modId") != MOD_ID:
@@ -149,23 +177,20 @@ def validate_manifest() -> None:
             )
 
     params = manifest.get("params")
-    if not isinstance(params, list) or len(params) != 1:
-        raise AssertionError("mod.json:params must contain exactly one setting")
-    advanced = params[0]
-    if not isinstance(advanced, dict) or advanced.get("key") != ADVANCED_PARAM_KEY:
-        raise AssertionError("mod.json:params must declare the advanced setting")
-    if advanced.get("name") != ADVANCED_DEFAULT_NAME_KEY:
-        raise AssertionError("the advanced setting must use its default-visibility name")
-    if advanced.get("uiType") != "CheckBox":
-        raise AssertionError("the advanced setting must use a checkbox")
-    default_index = advanced.get("defaultIndex")
-    if isinstance(default_index, bool) or default_index != 1:
-        raise AssertionError("the advanced setting must default to Off")
-    if advanced.get("values") != [
-        "APASZ_SIDED_SIGNALS_OFF",
-        "APASZ_SIDED_SIGNALS_ON",
-    ]:
-        raise AssertionError("the advanced setting must contain Off and On")
+    if not isinstance(params, list) or len(params) != 2:
+        raise AssertionError("mod.json:params must contain exactly two settings")
+    validate_checkbox_setting(
+        params[0],
+        ADVANCED_PARAM_KEY,
+        ADVANCED_DEFAULT_NAME_KEY,
+        ADVANCED_TOOLTIP_KEY,
+    )
+    validate_checkbox_setting(
+        params[1],
+        FORCE_CONTROLS_PARAM_KEY,
+        FORCE_CONTROLS_NAME_KEY,
+        FORCE_CONTROLS_TOOLTIP_KEY,
+    )
 
     for field in ("known_signal_mods", "known_broken_mods"):
         entries = manifest.get(field)

@@ -52,8 +52,9 @@ global record SidedSignals
 
     record Core
         ADVANCED_ADJUSTMENTS_PARAM_KEY: string
-        ADVANCED_ADJUSTMENTS_OFF_INDEX: integer
-        ADVANCED_ADJUSTMENTS_ON_INDEX: integer
+        FORCE_CONTROLS_PARAM_KEY: string
+        TOGGLE_OFF_INDEX: integer
+        TOGGLE_ON_INDEX: integer
         SIDE_KEY: string
         SIDE_OFFSET_KEY: string
         LONGITUDINAL_OFFSET_KEY: string
@@ -103,6 +104,7 @@ global record SidedSignals
         modify: function(
             string,
             api.type.ConstructionDesc,
+            boolean,
             boolean
         ): api.type.ConstructionDesc
     end

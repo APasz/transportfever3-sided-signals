@@ -32,7 +32,7 @@ local function advancedAdjustmentsVisible(
     params: ConstructionParams
 ): CheckEnabledResult
     if params[core.ADVANCED_ADJUSTMENTS_PARAM_KEY]
-        == core.ADVANCED_ADJUSTMENTS_ON_INDEX
+        == core.TOGGLE_ON_INDEX
     then
         return "Enabled" as CheckEnabledResult
     end

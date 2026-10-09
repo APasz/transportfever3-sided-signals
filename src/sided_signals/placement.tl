@@ -400,7 +400,7 @@ local function advancedAdjustmentsEnabled(
         -- global setting so existing adjustments keep their behaviour.
         return enabledByDefault
     end
-    return selectedAdvancedIndex == core.ADVANCED_ADJUSTMENTS_ON_INDEX
+    return selectedAdvancedIndex == core.TOGGLE_ON_INDEX
 end
 
 local function applyLongitudinalOffset(
