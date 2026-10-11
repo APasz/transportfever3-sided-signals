@@ -89,9 +89,9 @@ local LONGITUDINAL_OFFSET_SPEC: NumericParamSpec = {
     key = core.LONGITUDINAL_OFFSET_KEY,
     nameKey = "APASZ_SIDED_SIGNALS_OFFSET",
     tooltipKey = "APASZ_SIDED_SIGNALS_OFFSET_TOOLTIP",
-    minimum = -20,
-    maximum = 50,
-    step = 1,
+    minimum = core.LONGITUDINAL_OFFSET_MINIMUM,
+    maximum = core.LONGITUDINAL_OFFSET_MAXIMUM,
+    step = core.LONGITUDINAL_OFFSET_STEP,
     formatter = METRES_FORMATTER,
 }
 
@@ -398,7 +398,18 @@ local function numericValues(spec: NumericParamSpec): {string}, {number}
 end
 
 local function numericValueIndex(spec: NumericParamSpec, value: number): integer
-    return math.floor((value - spec.minimum) / spec.step + 0.5) + 1
+    if not core.isFiniteNumber(value) then
+        error("Invalid default value for construction parameter: " .. spec.key)
+    end
+    local stepIndex = (value - spec.minimum) / spec.step
+    local roundedStepIndex = math.floor(stepIndex + 0.5)
+    if value < spec.minimum
+        or value > spec.maximum
+        or math.abs(stepIndex - roundedStepIndex) > 0.000001
+    then
+        error("Invalid default value for construction parameter: " .. spec.key)
+    end
+    return roundedStepIndex + 1
 end
 
 local function appendSideParam(params: {api.type.ScriptParam})
@@ -423,7 +434,8 @@ end
 
 local function appendNumericParam(
     params: {api.type.ScriptParam},
-    spec: NumericParamSpec
+    spec: NumericParamSpec,
+    defaultValue: number
 ): api.type.ScriptParam
     local labels, numbers = numericValues(spec)
     local parameter: api.type.ScriptParam = {
@@ -436,7 +448,7 @@ local function appendNumericParam(
         location = "Toolbar" as api.type.enum.ScriptParamLocation,
         displayMode = "Vertical" as api.type.enum.ScriptParamDisplayMode,
         group = core.PARAM_GROUP,
-        defaultIndex = numericValueIndex(spec, 0),
+        defaultIndex = numericValueIndex(spec, defaultValue),
         postConstructionModifiable = true,
         yearFrom = 0,
         yearTo = 0,
@@ -489,7 +501,7 @@ local function appendAdvancedNumericParam(
     params: {api.type.ScriptParam},
     spec: NumericParamSpec
 )
-    local parameter = appendNumericParam(params, spec)
+    local parameter = appendNumericParam(params, spec, 0)
     parameter.checkEnabledScript = advancedAdjustmentsVisibilityCheck()
 end
 
@@ -497,7 +509,7 @@ local function appendSideOffsetParam(
     params: {api.type.ScriptParam},
     hasNativeSide: boolean
 )
-    local parameter = appendNumericParam(params, SIDE_OFFSET_SPEC)
+    local parameter = appendNumericParam(params, SIDE_OFFSET_SPEC, 0)
     parameter.checkEnabledScript = {
         fileName = core.PARAM_SCRIPT .. "@sideOffsetEnabled",
         params = {
@@ -601,7 +613,8 @@ local function modify(
     fileName: string,
     constructionData: api.type.ConstructionDesc,
     advancedAdjustmentsEnabledByDefault: boolean,
-    showControlsForAllTrackEdgeObjects: boolean
+    showControlsForAllTrackEdgeObjects: boolean,
+    defaultTrackOffset: number
 ): api.type.ConstructionDesc
     if constructionData.edgeObject == nil
         or constructionData.edgeObject.snapToTrack ~= true
@@ -640,7 +653,11 @@ local function modify(
     if not core.hasParam(signalParams, core.LONGITUDINAL_OFFSET_KEY)
         and not existing.hasNativeLongitudinalOffset
     then
-        appendNumericParam(signalParams, LONGITUDINAL_OFFSET_SPEC)
+        appendNumericParam(
+            signalParams,
+            LONGITUDINAL_OFFSET_SPEC,
+            defaultTrackOffset
+        )
     end
 
     local addHeightOffset = not core.hasParam(signalParams, core.HEIGHT_OFFSET_KEY)

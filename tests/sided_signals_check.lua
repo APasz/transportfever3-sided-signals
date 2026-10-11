@@ -1,5 +1,6 @@
 local MOD_ID = "apasz_sided_signals"
 local ADVANCED_ADJUSTMENTS_PARAM_KEY = "apasz_sided_signals_advanced_adjustments"
+local DEFAULT_TRACK_OFFSET_PARAM_KEY = "apasz_sided_signals_default_track_offset"
 local FORCE_CONTROLS_PARAM_KEY = "apasz_sided_signals_force_controls"
 local TOGGLE_OFF_INDEX = 1
 local TOGGLE_ON_INDEX = 2
@@ -38,6 +39,16 @@ end
 local function assertNil(actual, message)
 	if actual ~= nil then
 		fail((message or "value is not nil") .. ": got " .. tostring(actual))
+	end
+end
+
+local function assertErrorContains(callback, fragment, message)
+	local succeeded, errorMessage = pcall(callback)
+	if succeeded then
+		fail((message or "expected an error") .. ": no error was raised")
+	end
+	if string.find(tostring(errorMessage), fragment, 1, true) == nil then
+		fail((message or "unexpected error") .. ": got " .. tostring(errorMessage))
 	end
 end
 
@@ -256,9 +267,19 @@ end
 
 dofile("content/mod.script.lua")
 local mod = data()
+for _, invalidIndex in ipairs({ 0, 41.5, 72 }) do
+	assertErrorContains(function()
+		mod.runFn({}, {}, {
+			[MOD_ID] = {
+				[DEFAULT_TRACK_OFFSET_PARAM_KEY] = invalidIndex,
+			},
+		}, {})
+	end, "Invalid mod parameter selection index", "invalid global track offset index")
+end
 mod.runFn({}, {}, {
 	[MOD_ID] = {
 		[ADVANCED_ADJUSTMENTS_PARAM_KEY] = TOGGLE_ON_INDEX,
+		[DEFAULT_TRACK_OFFSET_PARAM_KEY] = 41,
 	},
 }, {})
 
@@ -302,7 +323,8 @@ assertEqual(
 assertEqual(sideOffset.checkEnabledScript.params.hasNativeSide, false, "injected side controls lateral offset")
 
 local offset = parameter(vanilla.params, OFFSET_KEY)
-assertEqual(offset.defaultIndex, 21, "zero track offset is the default")
+assertEqual(offset.defaultIndex, 41, "global setting index maps to the default track offset")
+assertEqual(offset.numbers[offset.defaultIndex], 20, "20 m setting defaults to 20 m in-game")
 assertEqual(offset.numbers[1], -20, "signed offset minimum")
 assertEqual(offset.numbers[21], 0, "signed offset zero")
 assertEqual(#offset.numbers, 71, "track offset has every metre step")
@@ -427,6 +449,7 @@ modifyConstructionWithAdvancedHidden("infrastructure/signal/basic.con", basicSig
 assertEqual(#basicSignal.params, 11, "hidden advanced adjustments remain available to the menu")
 assertEqual(parameter(basicSignal.params, SIDE_KEY) ~= nil, true, "hidden advanced settings retain side")
 assertEqual(parameter(basicSignal.params, OFFSET_KEY) ~= nil, true, "hidden advanced settings retain track offset")
+assertEqual(parameter(basicSignal.params, OFFSET_KEY).defaultIndex, 21, "missing global offset defaults to zero")
 assertEqual(parameter(basicSignal.params, MODE_KEY) ~= nil, true, "hidden advanced settings retain function")
 assertEqual(parameter(basicSignal.params, WHISTLE_KEY) ~= nil, true, "hidden advanced settings retain whistle")
 assertEqual(

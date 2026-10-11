@@ -51,12 +51,16 @@ end
 
 local M = {
 	ADVANCED_ADJUSTMENTS_PARAM_KEY = "apasz_sided_signals_advanced_adjustments",
+	DEFAULT_TRACK_OFFSET_PARAM_KEY = "apasz_sided_signals_default_track_offset",
 	FORCE_CONTROLS_PARAM_KEY = "apasz_sided_signals_force_controls",
 	TOGGLE_OFF_INDEX = 1,
 	TOGGLE_ON_INDEX = 2,
 	SIDE_KEY = "apasz_sided_signals_side",
 	SIDE_OFFSET_KEY = "apasz_sided_signals_side_offset",
 	LONGITUDINAL_OFFSET_KEY = "apasz_sided_signals_offset",
+	LONGITUDINAL_OFFSET_MINIMUM = -20,
+	LONGITUDINAL_OFFSET_MAXIMUM = 50,
+	LONGITUDINAL_OFFSET_STEP = 1,
 	HEIGHT_OFFSET_KEY = "apasz_sided_signals_height_offset",
 	YAW_OFFSET_KEY = "apasz_sided_signals_yaw_offset",
 	PITCH_OFFSET_KEY = "apasz_sided_signals_pitch_offset",

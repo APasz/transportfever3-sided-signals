@@ -52,12 +52,16 @@ global record SidedSignals
 
     record Core
         ADVANCED_ADJUSTMENTS_PARAM_KEY: string
+        DEFAULT_TRACK_OFFSET_PARAM_KEY: string
         FORCE_CONTROLS_PARAM_KEY: string
         TOGGLE_OFF_INDEX: integer
         TOGGLE_ON_INDEX: integer
         SIDE_KEY: string
         SIDE_OFFSET_KEY: string
         LONGITUDINAL_OFFSET_KEY: string
+        LONGITUDINAL_OFFSET_MINIMUM: number
+        LONGITUDINAL_OFFSET_MAXIMUM: number
+        LONGITUDINAL_OFFSET_STEP: number
         HEIGHT_OFFSET_KEY: string
         YAW_OFFSET_KEY: string
         PITCH_OFFSET_KEY: string
@@ -105,7 +109,8 @@ global record SidedSignals
             string,
             api.type.ConstructionDesc,
             boolean,
-            boolean
+            boolean,
+            number
         ): api.type.ConstructionDesc
     end
 
